@@ -26,7 +26,8 @@ Reference the client:
 
 Instantiate the client:
 
-`// set up a bunyan logger if you want to set custom logging.
+````
+// set up a bunyan logger if you want to set custom logging.
 var logger = bunyan.createLogger({name: 'cloco-node-client'});
 
 // cloco initialization options.  See below for the full list of options.
@@ -42,7 +43,8 @@ var options = {
 };
 
 // instantiate the client and subscribe to the menu.
-var client = cloco.createClient(options);`
+var client = cloco.createClient(options);
+````
 
 # Options
 
@@ -64,10 +66,12 @@ url | The cloco API url. | Optional.  Will default to the public hosted cloco AP
 
 We recommend that you authorize your machine using the cloco-bash tool, but you can set the cloco credentials via the options.  You can generate API credentials via the cloco admin UI or via the API.  Please ensure that the credentials are kept safe.
 
-`// initialize the credentials if supplied via environment variables.
+````
+// initialize the credentials if supplied via environment variables.
 if (process.env.CLOCO_CLIENT_KEY && process.env.CLOCO_CLIENT_SECRET) {
   options.credentials = { key: process.env.CLOCO_CLIENT_KEY, secret: process.env.CLOCO_CLIENT_SECRET };
-}`
+}
+````
 
 ## Encryption
 
@@ -84,7 +88,8 @@ To use the AES encryption algorithm, you must supply an encryption key / secret.
 
 To roll your own encryption algorithm, create an encryptor that conforms to the following interface:
 
-`export interface IEncryptor {
+````
+export interface IEncryptor {
 
   /**
    * Encrypts the given string into a string.
@@ -99,7 +104,8 @@ To roll your own encryption algorithm, create an encryptor that conforms to the 
    */
   decrypt(encrypted: string): string;
 
-}`
+}
+````
 
 ## Logging
 
