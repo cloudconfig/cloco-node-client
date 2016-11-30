@@ -35,3 +35,14 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# Typings folder
+typings
+
+# Sourcemaps
+lib/*.map
+
+# Test artefacts
+lib/**/*.spec.js
+lib/**/*.spec.d.ts
+lib/**/*test*
