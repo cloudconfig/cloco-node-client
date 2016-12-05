@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/cloudconfig/cloco-docs/master/source/images/logo.png" width="100" height="104" />
+</p>
+
 # cloco-node-client
 
 A cloco client for distribution as an NPM package, for incorporating into NodeJS applications.  

@@ -65,7 +65,7 @@ public static setDefaults(options: IOptions): void {
     }
   }
 
-  Logger.log.trace(options, "Settings.setDefaults");
+  Logger.log.trace("Settings.setDefaults: end.");
 }
 
   /**

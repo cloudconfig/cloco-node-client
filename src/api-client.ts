@@ -42,7 +42,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getApplication: Error getting application.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getApplication: Application received.", obj);
+                        Logger.log.trace("ApiClient.getApplication: Application received.", {data: obj});
                         resolve(obj);
                     }
                 });
@@ -76,7 +76,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getConfigObject: Error getting configuration object.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getConfigObject: Configuration object wrapper received.", obj);
+                        Logger.log.trace("ApiClient.getConfigObject: Configuration object wrapper received.", { data: obj });
                         resolve(obj);
                     }
                 });
@@ -126,7 +126,7 @@ export class ApiClient {
                         if (parseResponse) {
                           obj = JSON.parse(obj);
                         }
-                        Logger.log.trace("ApiClient.putConfigObject: Success response received.", obj);
+                        Logger.log.trace("ApiClient.putConfigObject: Success response received.", { data: obj });
                         resolve(obj);
                     }
                 });
@@ -233,7 +233,7 @@ export class ApiClient {
 
     restifyOptions.headers = headers;
 
-    Logger.log.trace(restifyOptions, "ApiClient.getRestifyOptions: end");
+    Logger.log.trace("ApiClient.getRestifyOptions: end");
 
     return restifyOptions;
   }
