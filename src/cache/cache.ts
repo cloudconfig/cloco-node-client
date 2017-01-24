@@ -25,32 +25,32 @@ export class Cache {
    */
   public add(item: CacheItem): void {
 
-    Logger.log.trace("Cache.add: start");
+    Logger.log.debug("Cache.add: start");
 
     // set the expiry.
-    Logger.log.trace(`Cache.add: Attempting to set the expiry from the TTL.  TTL: '${item.ttl}'`);
+    Logger.log.debug(`Cache.add: Attempting to set the expiry from the TTL.  TTL: '${item.ttl}'`);
     if (item.ttl >= 0) {
       item.expires = new Date();
       item.expires.setTime(item.expires.getTime() + item.ttl * 1000);
-      Logger.log.trace(`Cache.add: Item expiry has been set: '${item.expires}'`);
+      Logger.log.debug(`Cache.add: Item expiry has been set: '${item.expires}'`);
     }
 
     if (!this.items) {
-      Logger.log.trace("Cache.add: Items array does not exist.  Creating...");
+      Logger.log.debug("Cache.add: Items array does not exist.  Creating...");
       this.items = [item];
       return;
     } else {
       for (let i: number = 0; i < this.items.length; i++) {
         if (this.items[i].key === item.key) {
-          Logger.log.trace("Cache.add: Item located in items array.  Updating....");
+          Logger.log.debug("Cache.add: Item located in items array.  Updating....");
           this.items[i] = item;
           return;
         }
       }
 
-      Logger.log.trace("Cache.add: Item not located in items array.  Adding....");
+      Logger.log.debug("Cache.add: Item not located in items array.  Adding....");
       this.items.push(item);
-      Logger.log.trace(`Cache.add: Cache contains '${this.items.length}' items.`);
+      Logger.log.debug(`Cache.add: Cache contains '${this.items.length}' items.`);
     }
   }
 
@@ -63,13 +63,13 @@ export class Cache {
    */
   public addItem(key: string, value: any, revision: number, ttl?: number): CacheItem {
 
-    Logger.log.trace(`Cache.addItem: start. key: '${key}', revision: '${revision}'`);
+    Logger.log.debug(`Cache.addItem: start. key: '${key}', revision: '${revision}'`);
 
     let existing: CacheItem = this.get(key);
 
     if (!existing || existing.revision < revision) {
 
-      Logger.log.trace(`Cache.addItem: new revision '${revision}' detected, adding to cache.`);
+      Logger.log.debug(`Cache.addItem: new revision '${revision}' detected, adding to cache.`);
 
       let cacheItem: CacheItem = new CacheItem();
       cacheItem.key = key;
@@ -82,7 +82,7 @@ export class Cache {
       return cacheItem;
     } else {
       this.add(existing);
-      Logger.log.trace(`Cache.addItem: no change from existing revision '${revision}', no cache update.`);
+      Logger.log.debug(`Cache.addItem: no change from existing revision '${revision}', no cache update.`);
       return undefined;
     }
   }
@@ -94,20 +94,20 @@ export class Cache {
    */
   public get(key: string): any {
 
-    Logger.log.trace("Cache.get: start");
+    Logger.log.debug("Cache.get: start");
 
     if (this.exists(key)) {
       for (let i: number = 0; i < this.items.length; i++) {
         if (this.items[i].key === key) {
-          Logger.log.trace(`Cache.get: Item '${key}' located in items array.  Returning....`);
+          Logger.log.debug(`Cache.get: Item '${key}' located in items array.  Returning....`);
           if (this.items[i].isExpired()) {
-            Logger.log.trace(`Cache.get: Item '${key}' has expired.`);
+            Logger.log.debug(`Cache.get: Item '${key}' has expired.`);
           }
           return this.items[i];
         }
       }
     } else {
-      Logger.log.trace("Cache.get: Item not located in items array.");
+      Logger.log.debug("Cache.get: Item not located in items array.");
       return undefined;
     }
   }
@@ -119,20 +119,20 @@ export class Cache {
    */
   public exists(key: string): boolean {
 
-    Logger.log.trace("Cache.exists: start");
+    Logger.log.debug("Cache.exists: start");
 
     if (!this.items) {
-      Logger.log.trace("Cache.exists: Items array does not exist.");
+      Logger.log.debug("Cache.exists: Items array does not exist.");
       return false;
     } else {
       for (let i: number = 0; i < this.items.length; i++) {
         if (this.items[i].key === key) {
-          Logger.log.trace(`Cache.exists: Item '${key}' located in items array.`);
+          Logger.log.debug(`Cache.exists: Item '${key}' located in items array.`);
           return true;
         }
       }
 
-      Logger.log.trace("Cache.exists: Item not located in items array.");
+      Logger.log.debug("Cache.exists: Item not located in items array.");
       return false;
     }
   }
@@ -143,21 +143,21 @@ export class Cache {
    */
   public remove(key: string): void {
 
-    Logger.log.trace("Cache.remove: start");
+    Logger.log.debug("Cache.remove: start");
 
     if (!this.items) {
-      Logger.log.trace("Cache.remove: Items array does not exist.");
+      Logger.log.debug("Cache.remove: Items array does not exist.");
       return;
     } else {
       for (let i: number = 0; i < this.items.length; i++) {
         if (this.items[i].key === key) {
-          Logger.log.trace("Cache.remove: Item located in items array.  Removing....");
+          Logger.log.debug("Cache.remove: Item located in items array.  Removing....");
           this.items.splice(i, 1);
           return;
         }
       }
 
-      Logger.log.trace("Cache.remove: Item not located in items array.");
+      Logger.log.debug("Cache.remove: Item not located in items array.");
     }
   }
 }

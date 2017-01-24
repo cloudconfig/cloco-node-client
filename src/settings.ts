@@ -19,9 +19,10 @@ export class Settings {
  */
 public static setDefaults(options: IOptions): void {
 
-  Logger.log.trace("Settings.setDefaults: start.");
+  Logger.log.debug("Settings.setDefaults: start.");
 
   // default the encryptor to the passthrough encryptor if not set.
+  options.useEncryption = options.encryptor ? true : false;
   options.encryptor = options.encryptor || new PassthroughEncryptor();
 
   // load the url from config else use the default cloco one.
@@ -65,7 +66,7 @@ public static setDefaults(options: IOptions): void {
     }
   }
 
-  Logger.log.trace("Settings.setDefaults: end.");
+  Logger.log.debug("Settings.setDefaults: end.");
 }
 
   /**

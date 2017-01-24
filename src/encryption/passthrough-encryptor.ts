@@ -15,8 +15,8 @@ export class PassthroughEncryptor implements IEncryptor {
  */
  public encrypt(data: string): string {
 
-      Logger.log.trace("PassthroughEncryptor.encrypt: start.");
-      Logger.log.trace(`PassthroughEncryptor.encrypt: Received object of type '${typeof data}'`);
+      Logger.log.debug("PassthroughEncryptor.encrypt: start.");
+      Logger.log.debug(`PassthroughEncryptor.encrypt: Received object of type '${typeof data}'`);
 
       return data;
  }
@@ -26,8 +26,8 @@ export class PassthroughEncryptor implements IEncryptor {
   */
  public decrypt(encrypted: string): string {
 
-    Logger.log.trace("PassthroughEncryptor.decrypt: start.");
-    Logger.log.trace(`PassthroughEncryptor.decrypt: Received object of type '${typeof encrypted}'`);
+    Logger.log.debug("PassthroughEncryptor.decrypt: start.");
+    Logger.log.debug(`PassthroughEncryptor.decrypt: Received object of type '${typeof encrypted}'`);
 
     try {
       // string data coming from cloco is base64 encoded.

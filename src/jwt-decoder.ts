@@ -21,15 +21,15 @@ export class JwtDecoder {
      */
     public static bearerTokenExpired(token: string): boolean {
 
-        Logger.log.trace("JwtDecoder.bearerTokenExpired: start");
-        Logger.log.trace("JwtDecoder.bearerTokenExpired: Checking bearer token for expiry.");
+        Logger.log.debug("JwtDecoder.bearerTokenExpired: start");
+        Logger.log.debug("JwtDecoder.bearerTokenExpired: Checking bearer token for expiry.");
 
         let decoder: JwtDecoder = new JwtDecoder(token);
         if (!decoder.isValid) {
           Logger.log.error("JwtDecoder.bearerTokenExpired: Bearer token invalid.");
           throw new Error("Bearer token invalid.");
         } else {
-          Logger.log.trace(`JwtDecoder.bearerTokenExpired: Bearer token expiry: ${decoder.isExpired}`);
+          Logger.log.debug(`JwtDecoder.bearerTokenExpired: Bearer token expiry: ${decoder.isExpired}`);
           return decoder.isExpired;
         }
     }
@@ -52,10 +52,10 @@ export class JwtDecoder {
      */
     private decodeToken(): void {
 
-        Logger.log.trace("JwtDecoder.decodeToken: start");
+        Logger.log.debug("JwtDecoder.decodeToken: start");
 
         // check for the jwt
-        Logger.log.trace("JwtDecoder.decodeToken: Checking that there is a JWT.");
+        Logger.log.debug("JwtDecoder.decodeToken: Checking that there is a JWT.");
         if (!this.jwt || this.jwt.length === 0) {
             Logger.log.error("JwtDecoder.decodeToken: No JWT provided.");
             this.isValid = false;
@@ -64,7 +64,7 @@ export class JwtDecoder {
 
         let parts: string[] = this.jwt.split(".");
 
-        Logger.log.trace("JwtDecoder.decodeToken: Checking that the JWT has 3 parts.");
+        Logger.log.debug("JwtDecoder.decodeToken: Checking that the JWT has 3 parts.");
         if (parts.length !== 3) {
             Logger.log.error("JwtDecoder.decodeToken: JWT must have 3 parts. Token invalid.");
             this.isValid = false;
@@ -72,9 +72,9 @@ export class JwtDecoder {
         }
 
         // base64 decode the second part of the bearer token to get the JSON string of claims.
-        Logger.log.trace("JwtDecoder.decodeToken: Decoding the claims.");
+        Logger.log.debug("JwtDecoder.decodeToken: Decoding the claims.");
         let decodedClaims: string = new Buffer(parts[1], "base64").toString();
-        Logger.log.trace("JwtDecoder.decodeToken: The JWT claims: ", { data: decodedClaims });
+        Logger.log.debug("JwtDecoder.decodeToken: The JWT claims: ", { data: decodedClaims });
 
         // cast the claims as an object.
         try {
@@ -90,7 +90,7 @@ export class JwtDecoder {
      */
     private readTokenExpirationDate(): void {
 
-        Logger.log.trace("JwtDecoder.readTokenExpirationDate: start");
+        Logger.log.debug("JwtDecoder.readTokenExpirationDate: start");
 
         if (typeof this.claims.exp === "undefined") {
             Logger.log.error("JwtDecoder.readTokenExpirationDate: No token expiration date provided.");
@@ -103,7 +103,7 @@ export class JwtDecoder {
             let date: Date = new Date(0); // the 0 here is the key, which sets the date to the epoch
             date.setUTCSeconds(this.claims.exp);
             this.expiryDate = date;
-            Logger.log.trace(`JwtDecoder.readTokenExpirationDate: Bearer token expiry: ${date}`);
+            Logger.log.debug(`JwtDecoder.readTokenExpirationDate: Bearer token expiry: ${date}`);
         } catch (e) {
             Logger.log.error(e.message, "JwtDecoder.readTokenExpirationDate");
             this.isValid = false;
@@ -116,7 +116,7 @@ export class JwtDecoder {
      */
     private isTokenExpired(offsetSeconds?: number): void {
 
-        Logger.log.trace("JwtDecoder.isTokenExpired: start");
+        Logger.log.debug("JwtDecoder.isTokenExpired: start");
 
         offsetSeconds = offsetSeconds || 0;
         if (this.expiryDate === undefined) {

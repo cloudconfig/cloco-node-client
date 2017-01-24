@@ -59,4 +59,9 @@ export interface IOptions {
      * @type {string}
      */
     url?: string;
+    /**
+     * The API will be using encryption on the configuration sections.
+     * @type {boolean}
+     */
+    useEncryption?: boolean;
 }

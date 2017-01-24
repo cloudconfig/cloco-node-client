@@ -13,7 +13,7 @@ export class StringEncoder implements IEncoder {
    * Encodes the object assuming it can be cast to a string.
    */
   public encode(obj: any): string {
-    Logger.log.trace("StringEncoder.encode: start.");
+    Logger.log.debug("StringEncoder.encode: start.");
     return obj.toString();
   }
 
@@ -22,7 +22,7 @@ export class StringEncoder implements IEncoder {
    * @type {any}
    */
   public decode(encoded: string): any {
-    Logger.log.trace("StringEncoder.decode: start.");
+    Logger.log.debug("StringEncoder.decode: start.");
     return encoded;
   }
 }

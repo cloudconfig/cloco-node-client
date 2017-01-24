@@ -23,12 +23,12 @@ export class ApiClient {
    */
   public static async getApplication(options: IOptions): Promise<ClocoApp> {
 
-    Logger.log.trace("ApiClient.getApplication: start");
+    Logger.log.debug("ApiClient.getApplication: start");
 
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
     let path: string = `/${options.subscription}/applications/${options.application}`;
-    Logger.log.trace("ApiClient.getApplication: Calling API", {url: options.url}, {path: path});
+    Logger.log.debug("ApiClient.getApplication: Calling API", {url: options.url}, {path: path});
 
     return new Promise<ClocoApp>(
         function(
@@ -42,7 +42,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getApplication: Error getting application.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getApplication: Application received.", {data: obj});
+                        Logger.log.debug("ApiClient.getApplication: Application received.", {data: obj});
                         resolve(obj);
                     }
                 });
@@ -57,12 +57,12 @@ export class ApiClient {
    */
   public static async getConfigObject(options: IOptions, objectId: string): Promise<ConfigObjectWrapper> {
 
-    Logger.log.trace("ApiClient.getConfigObject: start");
+    Logger.log.debug("ApiClient.getConfigObject: start");
 
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
     let path: string = `/${options.subscription}/configuration/${options.application}/${objectId}/${options.environment}`;
-    Logger.log.trace("ApiClient.getConfigObject: Calling API", {url: options.url}, {path: path});
+    Logger.log.debug("ApiClient.getConfigObject: Calling API", {url: options.url}, {path: path});
 
     return new Promise<ConfigObjectWrapper>(
         function(
@@ -76,7 +76,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getConfigObject: Error getting configuration object.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getConfigObject: Configuration object wrapper received.", { data: obj });
+                        Logger.log.debug("ApiClient.getConfigObject: Configuration object wrapper received.", { data: obj });
                         resolve(obj);
                     }
                 });
@@ -92,23 +92,23 @@ export class ApiClient {
    */
   public static async putConfigObject(options: IOptions, objectId: string, body: any): Promise<ConfigObjectWrapper> {
 
-    Logger.log.trace("ApiClient.putConfigObject: start");
+    Logger.log.debug("ApiClient.putConfigObject: start");
 
     // initialise the restify client.
     let client: restify.Client;
     let parseResponse: boolean = false;
 
     if (typeof body === "string") {
-      Logger.log.trace("ApiClient.putConfigObject: creating string client.");
+      Logger.log.debug("ApiClient.putConfigObject: creating string client.");
       client = restify.createStringClient(ApiClient.getRestifyOptions(options));
       parseResponse = true;
     } else {
-      Logger.log.trace("ApiClient.putConfigObject: creating JSON client.");
+      Logger.log.debug("ApiClient.putConfigObject: creating JSON client.");
       client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
     }
 
     let path: string = `/${options.subscription}/configuration/${options.application}/${objectId}/${options.environment}`;
-    Logger.log.trace("ApiClient.putConfigObject: Calling API", {url: options.url}, {path: path});
+    Logger.log.debug("ApiClient.putConfigObject: Calling API", {url: options.url}, {path: path});
 
     return new Promise<ConfigObjectWrapper>(
         function(
@@ -126,7 +126,7 @@ export class ApiClient {
                         if (parseResponse) {
                           obj = JSON.parse(obj);
                         }
-                        Logger.log.trace("ApiClient.putConfigObject: Success response received.", { data: obj });
+                        Logger.log.debug("ApiClient.putConfigObject: Success response received.", { data: obj });
                         resolve(obj);
                     }
                 });
@@ -140,7 +140,7 @@ export class ApiClient {
    */
   public static async getAccessTokenFromRefreshToken(options: IOptions): Promise<AccessTokenResponse> {
 
-    Logger.log.trace("ApiClient.getAccessTokenFromRefreshToken: start");
+    Logger.log.debug("ApiClient.getAccessTokenFromRefreshToken: start");
 
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
@@ -148,7 +148,7 @@ export class ApiClient {
     let body: TokenRequest = new TokenRequest();
     body.grant_type = "refresh_token";
     body.refresh_token = options.tokens.refreshToken;
-    Logger.log.trace("ApiClient.getAccessTokenFromRefreshToken: Calling API", {url: options.url}, {path: path});
+    Logger.log.debug("ApiClient.getAccessTokenFromRefreshToken: Calling API", {url: options.url}, {path: path});
 
     return new Promise<AccessTokenResponse>(
         function(
@@ -163,7 +163,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getAccessTokenFromRefreshToken: Error getting access token.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getAccessTokenFromRefreshToken: Access token response received.");
+                        Logger.log.debug("ApiClient.getAccessTokenFromRefreshToken: Access token response received.");
                         resolve(obj);
                     }
                 });
@@ -177,14 +177,14 @@ export class ApiClient {
    */
   public static async getAccessTokenFromClientCredentials(options: IOptions): Promise<AccessTokenResponse> {
 
-    Logger.log.trace("ApiClient.getAccessTokenFromClientCredentials: start");
+    Logger.log.debug("ApiClient.getAccessTokenFromClientCredentials: start");
 
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options, "basic"));
     let path: string = `/oauth/token`;
     let body: TokenRequest = new TokenRequest();
     body.grant_type = "client_credentials";
-    Logger.log.trace("ApiClient.getAccessTokenFromClientCredentials: Calling API", {url: options.url}, {path: path});
+    Logger.log.debug("ApiClient.getAccessTokenFromClientCredentials: Calling API", {url: options.url}, {path: path});
 
     return new Promise<AccessTokenResponse>(
         function(
@@ -199,7 +199,7 @@ export class ApiClient {
                         Logger.log.error(err, "ApiClient.getAccessTokenFromClientCredentials: Error getting access token.");
                         reject(err);
                     } else {
-                        Logger.log.trace("ApiClient.getAccessTokenFromClientCredentials: Access token response received.");
+                        Logger.log.debug("ApiClient.getAccessTokenFromClientCredentials: Access token response received.");
                         resolve(obj);
                     }
                 });
@@ -213,7 +213,7 @@ export class ApiClient {
    */
   private static getRestifyOptions(options: IOptions, credentialType?: string): restify.ClientOptions {
 
-    Logger.log.trace("ApiClient.getRestifyOptions: start");
+    Logger.log.debug("ApiClient.getRestifyOptions: start");
 
     let restifyOptions: restify.ClientOptions = {
         url: options.url,
@@ -223,17 +223,17 @@ export class ApiClient {
     let headers: any = {};
 
     if (credentialType === "basic") {
-      Logger.log.trace("ApiClient.getRestifyOptions: generating auth header with client credentials.");
+      Logger.log.debug("ApiClient.getRestifyOptions: generating auth header with client credentials.");
       let encoded: string = new Buffer(`${options.credentials.key}:${options.credentials.secret}`).toString("base64");
       headers.authorization = `Basic ${encoded}`;
     } else {
-        Logger.log.trace("ApiClient.getRestifyOptions: generating auth header with bearer token.");
+        Logger.log.debug("ApiClient.getRestifyOptions: generating auth header with bearer token.");
         headers.authorization = `Bearer ${options.tokens.accessToken}`;
     }
 
     restifyOptions.headers = headers;
 
-    Logger.log.trace("ApiClient.getRestifyOptions: end");
+    Logger.log.debug("ApiClient.getRestifyOptions: end");
 
     return restifyOptions;
   }

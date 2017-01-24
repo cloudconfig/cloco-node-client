@@ -4,7 +4,7 @@
  *
  *   Implements encryption using the AES algorithm.
  */
-import * as CryptoJS from "crypto-js";
+import * as Crypto from "crypto";
 import { Logger } from "../logging/logger";
 import { EncryptionError } from "./encryption-error";
 import { IEncryptor } from "./iencryptor";
@@ -31,12 +31,19 @@ export class AesEncryptor implements IEncryptor {
  */
  public encrypt(data: string): string {
 
-     Logger.log.trace("AesEncryptor.encrypt: start.");
+     Logger.log.debug("AesEncryptor.encrypt: start.");
 
      if (!this.key) {
        throw new EncryptionError("Encryptionkey not available.", "AES");
      }
-     return CryptoJS.AES.encrypt(data, this.key).toString();
+
+     let cipher: Crypto.Cipher = Crypto.createCipher("aes256", this.key);
+     let encrypted: string = cipher.update(data, "utf8", "base64");
+     encrypted += cipher.final("base64");
+
+     Logger.log.debug(`AesEncryptor.encrypt: encryption complete: '${encrypted}'.`);
+
+     return encrypted;
  }
 
  /**
@@ -44,14 +51,22 @@ export class AesEncryptor implements IEncryptor {
   */
  public decrypt(encrypted: string): string {
 
-     Logger.log.trace("AesEncryptor.decrypt: start.");
+     Logger.log.debug("AesEncryptor.decrypt: start.");
 
      if (!this.key) {
        throw new EncryptionError("Encryptionkey not available.", "AES");
      }
 
      try {
-       return CryptoJS.AES.decrypt(encrypted, this.key).toString(CryptoJS.enc.Utf8);
+       Logger.log.debug(`AesEncryptor.decrypt: encrypted data: ${encrypted}`);
+
+       let decipher: Crypto.Decipher = Crypto.createDecipher("aes256", this.key);
+       let decrypted: string = decipher.update(encrypted, "base64", "utf8");
+       decrypted += decipher.final("utf8");
+
+       Logger.log.debug(`AesEncryptor.decrypt: decrypted data: ${decrypted}`);
+
+       return decrypted;
      } catch (e) {
        Logger.log.error(`AesEncryptor.decrypt: Failed to decrypt: ${e}`);
        throw new EncryptionError(`Failed to decrypt: ${e}`, "AES");

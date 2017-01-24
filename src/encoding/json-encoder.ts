@@ -12,7 +12,7 @@ export class JsonEncoder implements IEncoder {
    * Encodes the object as JSON.
    */
   public encode(obj: any): string {
-    Logger.log.trace("JsonEncoder.encode: start.");
+    Logger.log.debug("JsonEncoder.encode: start.");
     return JSON.stringify(obj);
   }
 
@@ -21,7 +21,7 @@ export class JsonEncoder implements IEncoder {
    * @type {any}
    */
   public decode(encoded: string): any {
-    Logger.log.trace("JsonEncoder.decode: start.");
+    Logger.log.debug("JsonEncoder.decode: start.");
     return JSON.parse(encoded);
   }
 }

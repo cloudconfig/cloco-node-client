@@ -30,6 +30,6 @@ export class Logger {
         });
     }
 
-    Logger.log.trace("Logging is initialized.");
+    Logger.log.debug("Logging is initialized.");
   }
 }
