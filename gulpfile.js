@@ -3,6 +3,7 @@
 var
     eventStream = require("event-stream"),
     gulp = require("gulp"),
+    istanbul = require("gulp-istanbul"),
     jasmine = require("gulp-jasmine"),
     reporters = require("jasmine-reporters"),
     sourcemaps = require("gulp-sourcemaps"),
@@ -45,4 +46,46 @@ gulp.task("jasmine", function() {
             })],
             verbose: true
         }));
+});
+
+gulp.task("istanbul", ["istanbul:pre-test"], function() {
+  var istanbulCoverageOutputDirectory = 'test/output';
+    console.log("Finding specs at: lib/**/*.[Ss]pec.js");
+    console.log("Writing coverage reports to: " + istanbulCoverageOutputDirectory);
+    return gulp.src('lib/**/*.[Ss]pec.js')
+        .pipe(jasmine({
+            includeStackTrace: true,
+            reporter: [new reporters.TerminalReporter({
+                color: true,
+                showStack: true,
+                verbosity: 3
+            })],
+            verbose: true
+        }))
+        // create the reports after tests ran
+        .pipe(istanbul.writeReports({
+                                      dir: istanbulCoverageOutputDirectory,
+                                      reporters: [ "lcovonly", "json", "text", "text-summary", "html"],
+                                      reportOpts: {
+                                                    dir: istanbulCoverageOutputDirectory,
+                                                    lcov: {dir: istanbulCoverageOutputDirectory + "/lcovonly", file: "lcov.info"},
+                                                    json: {dir: istanbulCoverageOutputDirectory + "/json", file: "coverage.json"},
+                                                    html: {dir: istanbulCoverageOutputDirectory + "/html"},
+                                                  }
+                                    }))
+        // Enforce a coverage of at least 90%. 
+        .pipe(istanbul.enforceThresholds({ thresholds: { global: 90 } }));
+});
+
+// don't run me on my own. this just prepares istanbul before the jasmine test run, it's meaningless without the jasmine run afterwards.
+gulp.task('istanbul:pre-test', function () {
+  var serverCoverageGlob = ['lib/**/*.js', '!lib/**/*.[Ss]pec.js', '!lib/test/*.js'];
+  console.log("Istanbul Covering the following code: " + serverCoverageGlob);
+  return gulp.src(serverCoverageGlob)
+    .pipe(sourcemaps.init())
+    // includeUntested makes it include files that aren't covered by any specs.
+    .pipe(istanbul({includeUntested: true}))
+    .pipe(sourcemaps.write('.'))
+    // Force `require` to return covered files
+    .pipe(istanbul.hookRequire());
 });

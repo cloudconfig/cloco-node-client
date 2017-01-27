@@ -8,8 +8,11 @@ import * as restify from "restify";
 import { Logger } from "./logging/logger";
 import { AccessTokenResponse } from "./types/access-token-response";
 import { IOptions } from "./types/ioptions";
+import { JwtDecoder } from "./jwt-decoder";
 import { ClocoApp, ConfigObjectWrapper } from "./types/clocoapp";
+import { Settings } from "./settings";
 import { TokenRequest } from "./types/token-request";
+import { ApiError } from "./types/api-error";
 
 /**
  * Class to provide static accessors over the restify client promises.
@@ -24,6 +27,9 @@ export class ApiClient {
   public static async getApplication(options: IOptions): Promise<ClocoApp> {
 
     Logger.log.debug("ApiClient.getApplication: start");
+
+    // check the bearer token before making the call
+    await ApiClient.checkBearerToken(options);
 
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
@@ -40,7 +46,8 @@ export class ApiClient {
                 function(err: Error, req: restify.Request, res: restify.Response, obj: ClocoApp): void {
                     if (err) {
                         Logger.log.error(err, "ApiClient.getApplication: Error getting application.");
-                        reject(err);
+                        let apiError: ApiError = new ApiError(err.message, options.subscription, options.application);
+                        reject(apiError);
                     } else {
                         Logger.log.debug("ApiClient.getApplication: Application received.", {data: obj});
                         resolve(obj);
@@ -59,6 +66,9 @@ export class ApiClient {
 
     Logger.log.debug("ApiClient.getConfigObject: start");
 
+    // check the bearer token before making the call
+    await ApiClient.checkBearerToken(options);
+
     // initialise the restify client.
     let client: restify.Client = restify.createJsonClient(ApiClient.getRestifyOptions(options));
     let path: string = `/${options.subscription}/configuration/${options.application}/${objectId}/${options.environment}`;
@@ -73,8 +83,10 @@ export class ApiClient {
                 path,
                 function(err: Error, req: restify.Request, res: restify.Response, obj: ConfigObjectWrapper): void {
                     if (err) {
-                        Logger.log.error(err, "ApiClient.getConfigObject: Error getting configuration object.");
-                        reject(err);
+                        Logger.log.error(err, `ApiClient.getConfigObject: Error getting configuration object '$objectId'.`);
+                        let apiError: ApiError = new ApiError(
+                          err.message, options.subscription, options.application, objectId, options.environment);
+                        reject(apiError);
                     } else {
                         Logger.log.debug("ApiClient.getConfigObject: Configuration object wrapper received.", { data: obj });
                         resolve(obj);
@@ -93,6 +105,9 @@ export class ApiClient {
   public static async putConfigObject(options: IOptions, objectId: string, body: any): Promise<ConfigObjectWrapper> {
 
     Logger.log.debug("ApiClient.putConfigObject: start");
+
+    // check the bearer token before making the call
+    await ApiClient.checkBearerToken(options);
 
     // initialise the restify client.
     let client: restify.Client;
@@ -120,8 +135,10 @@ export class ApiClient {
                 body,
                 function(err: Error, req: restify.Request, res: restify.Response, obj: any): void {
                     if (err) {
-                        Logger.log.error(err, "ApiClient.putConfigObject: Error writing data.");
-                        reject(err);
+                        Logger.log.error(err, "ApiClient.putConfigObject: Error writing data for configuration object '$objectId'.");
+                        let apiError: ApiError = new ApiError(
+                          err.message, options.subscription, options.application, objectId, options.environment);
+                        reject(apiError);
                     } else {
                         if (parseResponse) {
                           obj = JSON.parse(obj);
@@ -134,11 +151,41 @@ export class ApiClient {
   }
 
   /**
+   * Checks the bearer token for expiry and, if expired, refreshes.
+   * @return {Promise<void>} A promise of the work completing.
+   */
+  private static async checkBearerToken(options: IOptions): Promise<void> {
+
+    Logger.log.debug(`ApiClient.checkBearerToken: start.`);
+
+    try {
+      if (JwtDecoder.bearerTokenExpired(options.tokens.accessToken)) {
+
+        Logger.log.debug(`ApiClient.checkBearerToken: bearer token has expired and will be refreshed.`);
+
+        let response: AccessTokenResponse;
+        if (options.credentials) {
+          response = await ApiClient.getAccessTokenFromClientCredentials(options);
+        } else {
+          response = await ApiClient.getAccessTokenFromRefreshToken(options);
+        }
+        options.tokens.accessToken = response.access_token;
+        Settings.storeBearerToken(response.access_token);
+      }
+    } catch (e) {
+      Logger.log.error(e, "ApiClient.checkBearerToken: error encountered.");
+      throw e;
+    }
+
+    Logger.log.debug(`ApiClient.checkBearerToken: complete.`);
+  }
+
+  /**
    * Refreshes the bearer token.
    * @param  {IOptions}          options The initialization options.
    * @return {Promise<AccessTokenResponse>}         A promise of the access token.
    */
-  public static async getAccessTokenFromRefreshToken(options: IOptions): Promise<AccessTokenResponse> {
+  private static async getAccessTokenFromRefreshToken(options: IOptions): Promise<AccessTokenResponse> {
 
     Logger.log.debug("ApiClient.getAccessTokenFromRefreshToken: start");
 
@@ -175,7 +222,7 @@ export class ApiClient {
    * @param  {IOptions}          options The initialization options.
    * @return {Promise<AccessTokenResponse>}         A promise of the access token.
    */
-  public static async getAccessTokenFromClientCredentials(options: IOptions): Promise<AccessTokenResponse> {
+  private static async getAccessTokenFromClientCredentials(options: IOptions): Promise<AccessTokenResponse> {
 
     Logger.log.debug("ApiClient.getAccessTokenFromClientCredentials: start");
 

@@ -69,16 +69,6 @@ export declare class ClocoApp {
     constructor();
 }
 /**
- * Template key, used instead of environment.
- * @type {string}
- */
-export declare const templateKey: string;
-/**
- * Schema key, used instead of environment.
- * @type {string}
- */
-export declare const schemaKey: string;
-/**
  *   class Environment
  *   Represents an environment into which an application is being configured.
  */

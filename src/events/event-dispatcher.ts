@@ -8,7 +8,7 @@ import { IEvent } from "./ievent";
 
 export class EventDispatcher<TSender, TArgs> implements IEvent<TSender, TArgs> {
 
-    private subscriptions: Array<(sender: TSender, args: TArgs) => void> = new Array<(sender: TSender, args: TArgs) => void>();
+    public subscriptions: Array<(sender: TSender, args: TArgs) => void> = new Array<(sender: TSender, args: TArgs) => void>();
 
     public subscribe(fn: (sender: TSender, args: TArgs) => void): void {
         if (fn) {

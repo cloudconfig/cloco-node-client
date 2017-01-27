@@ -4,7 +4,7 @@
  *   Copyright (c) 345 Systems LLP 2016, all rights reserved.
  */
 /**
- * Class that represents an error in an encryption component.
+ * Class that represents an error in an encryption error.
  */
 export declare class EncryptionError extends Error {
     /**

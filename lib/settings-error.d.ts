@@ -20,7 +20,7 @@ export declare class SettingsError extends Error {
     /**
      * constructor
      * @param  {string} message Initialize error message to this
-     * @param  {number} setting Initialize error setting to this
+     * @param  {string} setting Initialize error setting to this
      */
     constructor(message: string, setting: string);
     /**

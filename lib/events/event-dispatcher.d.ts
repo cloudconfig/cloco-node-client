@@ -6,7 +6,7 @@
  */
 import { IEvent } from "./ievent";
 export declare class EventDispatcher<TSender, TArgs> implements IEvent<TSender, TArgs> {
-    private subscriptions;
+    subscriptions: Array<(sender: TSender, args: TArgs) => void>;
     subscribe(fn: (sender: TSender, args: TArgs) => void): void;
     unsubscribe(fn: (sender: TSender, args: TArgs) => void): void;
     dispatch(sender: TSender, args: TArgs): void;

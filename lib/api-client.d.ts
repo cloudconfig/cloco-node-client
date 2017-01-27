@@ -1,4 +1,3 @@
-import { AccessTokenResponse } from "./types/access-token-response";
 import { IOptions } from "./types/ioptions";
 import { ClocoApp, ConfigObjectWrapper } from "./types/clocoapp";
 /**
@@ -27,17 +26,22 @@ export declare class ApiClient {
      */
     static putConfigObject(options: IOptions, objectId: string, body: any): Promise<ConfigObjectWrapper>;
     /**
-     * Refreshes the bearer token.
-     * @param  {IOptions}          options The initialization options.
-     * @return {Promise<AccessTokenResponse>}         A promise of the access token.
+     * Checks the bearer token for expiry and, if expired, refreshes.
+     * @return {Promise<void>} A promise of the work completing.
      */
-    static getAccessTokenFromRefreshToken(options: IOptions): Promise<AccessTokenResponse>;
+    private static checkBearerToken(options);
     /**
      * Refreshes the bearer token.
      * @param  {IOptions}          options The initialization options.
      * @return {Promise<AccessTokenResponse>}         A promise of the access token.
      */
-    static getAccessTokenFromClientCredentials(options: IOptions): Promise<AccessTokenResponse>;
+    private static getAccessTokenFromRefreshToken(options);
+    /**
+     * Refreshes the bearer token.
+     * @param  {IOptions}          options The initialization options.
+     * @return {Promise<AccessTokenResponse>}         A promise of the access token.
+     */
+    private static getAccessTokenFromClientCredentials(options);
     /**
      * Gets the restify options based on the settings.
      * @param  {IOptions}              options The options.

@@ -4,7 +4,7 @@
  */
 
 /**
- * Class that represents an error in an encryption component.
+ * Class that represents an error in an encryption error.
  */
 export class EncryptionError extends Error {
 

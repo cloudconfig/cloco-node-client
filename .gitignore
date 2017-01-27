@@ -46,3 +46,4 @@ lib/*.map
 lib/**/*.spec.js
 lib/**/*.spec.d.ts
 lib/**/*test*
+test/output

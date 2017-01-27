@@ -26,9 +26,9 @@ export declare class Cache {
     /**
      * Gets an item from the cache.
      * @param  {string} key The item key.
-     * @return {any}        The item.
+     * @return {CacheItem}  The cache item.
      */
-    get(key: string): any;
+    get(key: string): CacheItem;
     /**
      * Checks for the existence of the item in the cache.
      * @param  {string}  key The key of the item.

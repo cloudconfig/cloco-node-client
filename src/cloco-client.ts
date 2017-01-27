@@ -7,16 +7,13 @@
 import { Cache } from "./cache/cache";
 import { CacheItem } from "./cache/cache-item";
 import { Logger } from "./logging/logger";
-import { AccessTokenResponse } from "./types/access-token-response";
 import { ClocoApp, ConfigObjectWrapper, ConfigObject } from "./types/clocoapp";
 import { IOptions } from "./types/ioptions";
 import { ApiClient } from "./api-client";
-import { JwtDecoder } from "./jwt-decoder";
 import { Settings } from "./settings";
 import { SettingsError } from "./settings-error";
 import { IEncoder } from "./encoding/iencoder";
 import { Encoding } from "./encoding/encoding";
-import { IEvent } from "./events/ievent";
 import { EventDispatcher } from "./events/event-dispatcher";
 
 /**
@@ -29,7 +26,7 @@ export class ClocoClient {
     public app: ClocoApp;
     public onConfigurationLoaded: EventDispatcher<ClocoClient, CacheItem> = new EventDispatcher<ClocoClient, CacheItem>();
     public onCacheExpired: EventDispatcher<ClocoClient, CacheItem> = new EventDispatcher<ClocoClient, CacheItem>();
-    public onError: EventDispatcher<ClocoClient, string> = new EventDispatcher<ClocoClient, string>();
+    public onError: EventDispatcher<ClocoClient, Error> = new EventDispatcher<ClocoClient, Error>();
     private timer: NodeJS.Timer;
 
     constructor(options: IOptions) {
@@ -46,9 +43,6 @@ export class ClocoClient {
 
         // set default values.
         Settings.setDefaults(this.options);
-
-        // check for timeouts on the cache.
-        this.timer = setTimeout(() => this.checkCacheTimeouts(), this.options.cacheCheckInterval);
       } catch (e) {
         Logger.log.error(e, "ClocoClient()");
         throw e;
@@ -65,19 +59,26 @@ export class ClocoClient {
 
       try {
         // load application.
-        await this.loadApplication();
+        await this.initializeApplication();
 
         // verify the configured environment.
         if (!this.environmentExists(this.options.environment)) {
           Logger.log.error(`ClocoClient.init: The environment ${this.options.environment} does not exist in application.`);
-          throw new SettingsError(`The environment ${this.options.environment} does not exist in application.`, "this.options.environment");
+          throw new SettingsError(
+            `The environment '${this.options.environment}' does not exist in application.`, "this.options.environment");
         }
 
         // load the configuration from the api
-        await this.loadConfigurationFromApi();
+        await this.initializeConfiguration();
+
+        // check for timeouts on the cache.
+        if (this.options.cacheCheckInterval > 0) {
+          this.timer = setTimeout(() => this.checkCacheTimeouts(), this.options.cacheCheckInterval);
+        }
 
         Logger.log.debug("ClocoClient.init: initialization complete.");
       } catch (e) {
+        this.onError.dispatch(this, e);
         Logger.log.error(e, "ClocoClient.init");
         throw e;
       }
@@ -92,7 +93,8 @@ export class ClocoClient {
 
       if (Cache.current.exists(objectId)) {
         Logger.log.debug(`ClocoClient.get: object '${objectId}' found in cache.  Returning.`);
-        return Cache.current.get(objectId) as T;
+        let item: CacheItem = Cache.current.get(objectId);
+        return item.value as T;
       } else {
         Logger.log.debug(`ClocoClient.get: object '${objectId}' not found in cache.`);
         return undefined;
@@ -119,54 +121,76 @@ export class ClocoClient {
     }
 
     /**
+     * Checks for cache timeouts.  Can be run from the timer or invoked by the parent application.
+     */
+    public checkCacheTimeouts(): void {
+
+      Logger.log.debug(`ClocoClient.checkCacheTimeouts: start.`);
+
+      for (let i: number = 0; i < Cache.current.items.length; i++) {
+        if (Cache.current.items[i].isExpired()) {
+          Logger.log.debug(
+            `ClocoClient.checkCacheTimeouts: cache expired for item '${Cache.current.items[i].key}'.`, {data: Cache.current.items[i]});
+          this.onCacheExpired.dispatch(this, Cache.current.items[i]);
+        }
+      }
+
+      Logger.log.debug(`ClocoClient.checkCacheTimeouts: complete.`);
+
+      // restart the timer.
+      if (this.options.cacheCheckInterval > 0) {
+        this.timer = setTimeout(() => this.checkCacheTimeouts(), this.options.cacheCheckInterval);
+      }
+    }
+
+    /**
      * Loads the cloco application.
      * @return {Promise<void>} A promise of the work completing.
      */
-    private async loadApplication(): Promise<void> {
+    private async initializeApplication(): Promise<void> {
 
-      Logger.log.debug(`ClocoClient.loadApplication: start.`);
+      Logger.log.debug(`ClocoClient.initializeApplication: start.`);
 
       try {
-        await this.checkBearerToken();
         this.app = await ApiClient.getApplication(this.options);
       } catch (e) {
-        this.onError.dispatch(this, e.message);
-        Logger.log.error(e, "ClocoClient.loadApplication: error encountered.");
+        Logger.log.error(e, "ClocoClient.initializeApplication: error encountered.");
+        throw e;
       }
 
-      Logger.log.debug(`ClocoClient.loadApplication: complete.`);
+      Logger.log.debug(`ClocoClient.initializeApplication: complete.`);
     }
 
     /**
      * Load the configuration.
      * @return {Promise<void>} A promise of the work completing.
      */
-    private async loadConfigurationFromApi(): Promise<void> {
+    private async initializeConfiguration(): Promise<void> {
 
-      Logger.log.debug(`ClocoClient.loadConfigurationFromApi: start.`);
+      Logger.log.debug(`ClocoClient.initializeConfiguration: start.`);
 
       for (let i: number = 0; i < this.app.configObjects.length; i++) {
        Logger.log.debug(
-         `ClocoClient.loadConfigurationFromApi: Requesting configuration item '${this.app.configObjects[i].objectIdentifier}'.`);
-       await this.loadConfigurationObjectWrapperFromApi(this.app.configObjects[i].objectIdentifier);
+         `ClocoClient.initializeConfiguration: Requesting configuration item '${this.app.configObjects[i].objectIdentifier}'.`);
+       await this.loadConfigurationObjectWrapperFromApi(this.app.configObjects[i].objectIdentifier, true);
       }
 
-      Logger.log.debug(`ClocoClient.loadConfigurationFromApi: complete.`);
+      Logger.log.debug(`ClocoClient.initializeConfiguration: complete.`);
     }
 
     /**
      * Loads the single configuration object from the server.
-     * @param  {string}        objectId The object identifier.
-     * @return {Promise<void>}          A promise of the work completing.
+     * @param  {string}        objectId     The object identifier.
+     * @param  {boolean}       failOnError  Indicates that an error should be raised if an error is encountered.
+     * @return {Promise<void>}              A promise of the work completing.
      */
-    private async loadConfigurationObjectWrapperFromApi(objectId: string): Promise<void> {
+    private async loadConfigurationObjectWrapperFromApi(objectId: string, failOnError?: boolean): Promise<void> {
 
       Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: start.`);
 
       try {
 
         Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: Checking bearer token.`);
-        await this.checkBearerToken();
 
         Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: Requesting configuration item '${objectId}'.`);
         let wrapper: ConfigObjectWrapper = await ApiClient.getConfigObject(this.options, objectId);
@@ -181,63 +205,20 @@ export class ClocoClient {
           wrapper.objectIdentifier, this.decryptAndDecode(wrapper), wrapper.revisionNumber, this.options.ttl);
 
         if (item) {
+          Logger.log.debug("ClocoClient.loadConfigurationObjectWrapperFromApi: Dispatching item.");
           this.onConfigurationLoaded.dispatch(this, item);
+        } else {
+          Logger.log.debug("ClocoClient.loadConfigurationObjectWrapperFromApi: No item to dispatch.");
         }
       } catch (e) {
-        this.onError.dispatch(this, objectId);
+        this.onError.dispatch(this, e);
         Logger.log.error(e, "ClocoClient.loadConfigurationObjectWrapperFromApi");
+        if (failOnError) {
+          throw e;
+        }
       }
 
       Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: complete.`);
-    }
-
-    /**
-     * Checks for cache timeouts.
-     */
-    private checkCacheTimeouts(): void {
-
-      Logger.log.debug(`ClocoClient.checkCacheTimeouts: start.`);
-
-      for (let i: number = 0; i < Cache.current.items.length; i++) {
-        if (Cache.current.items[i].isExpired()) {
-          Logger.log.debug(
-            `ClocoClient.checkCacheTimeouts: cache expired for item '${Cache.current.items[i].key}'.`, {data: Cache.current.items[i]});
-          this.onCacheExpired.dispatch(this, Cache.current.items[i]);
-        }
-      }
-
-      Logger.log.debug(`ClocoClient.checkCacheTimeouts: complete.`);
-      this.timer = setTimeout(() => this.checkCacheTimeouts(), this.options.cacheCheckInterval);
-    }
-
-    /**
-     * Checks the bearer token for expiry and, if expired, refreshes.
-     * @return {Promise<void>} A promise of the work completing.
-     */
-    private async checkBearerToken(): Promise<void> {
-
-      Logger.log.debug(`ClocoClient.checkBearerToken: start.`);
-
-      try {
-        if (JwtDecoder.bearerTokenExpired(this.options.tokens.accessToken)) {
-
-          Logger.log.debug(`ClocoClient.checkBearerToken: bearer token has expired and will be refreshed.`);
-
-          let response: AccessTokenResponse;
-          if (this.options.credentials) {
-            response = await ApiClient.getAccessTokenFromClientCredentials(this.options);
-          } else {
-            response = await ApiClient.getAccessTokenFromRefreshToken(this.options);
-          }
-          this.options.tokens.accessToken = response.access_token;
-          Settings.storeBearerToken(response.access_token);
-        }
-      } catch (e) {
-        this.onError.dispatch(this, e.message);
-        Logger.log.error(e, "ClocoClient.checkBearerToken: error encountered.");
-      }
-
-      Logger.log.debug(`ClocoClient.checkBearerToken: complete.`);
     }
 
     /**
@@ -269,23 +250,23 @@ export class ClocoClient {
      * @param  {string}       objectId The object identifier.
      * @return {ConfigObject}          The congif object metadata.
      */
-    private getConfigObject(objectId: string): ConfigObject {
+    private getConfigObjectMetadata(objectId: string): ConfigObject {
 
-      Logger.log.debug(`ClocoClient.getConfigObject: start. Searching for '${objectId}'.`);
+      Logger.log.debug(`ClocoClient.getConfigObjectMetadata: start. Searching for '${objectId}'.`);
 
       if (!this.app || !this.app.configObjects) {
-        Logger.log.debug("ClocoClient.getConfigObject: app not available, returning undefined.");
+        Logger.log.debug("ClocoClient.getConfigObjectMetadata: app not available, returning undefined.");
         return undefined;
       } else {
         for (let i: number = 0; i < this.app.configObjects.length; i++) {
           if (this.app.configObjects[i].objectIdentifier === objectId) {
-            Logger.log.debug(this.app.configObjects[i], "ClocoClient.getConfigObject: object found.");
+            Logger.log.debug(this.app.configObjects[i], "ClocoClient.getConfigObjectMetadata: object found.");
             return this.app.configObjects[i];
           }
         }
       }
 
-      Logger.log.debug("ClocoClient.getConfigObject: object not found, returning undefined.");
+      Logger.log.debug("ClocoClient.getConfigObjectMetadata: object not found, returning undefined.");
       return undefined;
     }
 
@@ -300,7 +281,7 @@ export class ClocoClient {
       Logger.log.debug(`ClocoClient.encodeAndEncrypt: processing object '${objectId}'.`);
 
       // retrieve the config object metadata.
-      let configObject: ConfigObject = this.getConfigObject(objectId);
+      let configObject: ConfigObject = this.getConfigObjectMetadata(objectId);
       if (!configObject) {
           Logger.log.debug(`ClocoClient.encodeAndEncrypt: config object metadata for '${objectId}' not found in application.`, this.app);
           throw new Error(`Config object metadata for '${objectId}' not found in application.`);
@@ -336,7 +317,7 @@ export class ClocoClient {
       Logger.log.debug(`ClocoClient.decryptAndDecode: processing object '${wrapper.objectIdentifier}'.`);
 
       // retrieve the config object metadata.
-      let configObject: ConfigObject = this.getConfigObject(wrapper.objectIdentifier);
+      let configObject: ConfigObject = this.getConfigObjectMetadata(wrapper.objectIdentifier);
       if (!configObject) {
           Logger.log.debug(
             `ClocoClient.decryptAndDecode: config object metadata for '${wrapper.objectIdentifier}' not found in application.`, this.app);

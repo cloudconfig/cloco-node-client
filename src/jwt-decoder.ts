@@ -43,7 +43,7 @@ export class JwtDecoder {
         }
 
         if (this.isValid) {
-            this.isTokenExpired();
+            this.checkTokenExpiry();
         }
     }
 
@@ -114,9 +114,9 @@ export class JwtDecoder {
      * Checks the token for expiry.
      * @param {number} offsetSeconds A number of seconds to use as an offset.
      */
-    private isTokenExpired(offsetSeconds?: number): void {
+    private checkTokenExpiry(offsetSeconds?: number): void {
 
-        Logger.log.debug("JwtDecoder.isTokenExpired: start");
+        Logger.log.debug("JwtDecoder.checkTokenExpiry: start");
 
         offsetSeconds = offsetSeconds || 0;
         if (this.expiryDate === undefined) {

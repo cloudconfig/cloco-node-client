@@ -89,18 +89,6 @@ export class ClocoApp {
 }
 
 /**
- * Template key, used instead of environment.
- * @type {string}
- */
-export const templateKey: string = "__template";
-
-/**
- * Schema key, used instead of environment.
- * @type {string}
- */
-export const schemaKey: string = "__schema";
-
-/**
  *   class Environment
  *   Represents an environment into which an application is being configured.
  */

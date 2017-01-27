@@ -70,4 +70,33 @@ describe("AesEncryptor unit tests", function(): void {
       let decrypted: any = encryptor.decrypt(encrypted);
       decrypted = JSON.parse(decrypted);
     });
+
+    it("decrypt with no key should fail", function(): void {
+
+        let encryptor: AesEncryptor = new AesEncryptor("");
+        let encrypted: string = "lzf/qL5Vqdt5SJNMhsevsQ==";
+
+        try {
+            let decrypted: any = encryptor.decrypt(encrypted);
+            fail("Expect exception to be raised due to no key.");
+        } catch (e) {
+          expect(e instanceof EncryptionError).toBeTruthy();
+        }
+    });
+
+    it("encrypt with no key should fail", function(): void {
+
+        let input: any = {
+          foo: "bar",
+        };
+
+        let encryptor: AesEncryptor = new AesEncryptor("");
+
+        try {
+            let encrypted: any = encryptor.encrypt(JSON.stringify(input));
+            fail("Expect exception to be raised due to no key.");
+        } catch (e) {
+          expect(e instanceof EncryptionError).toBeTruthy();
+        }
+    });
 });

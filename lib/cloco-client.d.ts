@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { CacheItem } from "./cache/cache-item";
 import { ClocoApp } from "./types/clocoapp";
 import { IOptions } from "./types/ioptions";
@@ -12,7 +13,7 @@ export declare class ClocoClient {
     app: ClocoApp;
     onConfigurationLoaded: EventDispatcher<ClocoClient, CacheItem>;
     onCacheExpired: EventDispatcher<ClocoClient, CacheItem>;
-    onError: EventDispatcher<ClocoClient, string>;
+    onError: EventDispatcher<ClocoClient, Error>;
     private timer;
     constructor(options: IOptions);
     /**
@@ -30,30 +31,26 @@ export declare class ClocoClient {
      */
     put<T>(objectId: string, item: T): Promise<void>;
     /**
+     * Checks for cache timeouts.  Can be run from the timer or invoked by the parent application.
+     */
+    checkCacheTimeouts(): void;
+    /**
      * Loads the cloco application.
      * @return {Promise<void>} A promise of the work completing.
      */
-    private loadApplication();
+    private initializeApplication();
     /**
      * Load the configuration.
      * @return {Promise<void>} A promise of the work completing.
      */
-    private loadConfigurationFromApi();
+    private initializeConfiguration();
     /**
      * Loads the single configuration object from the server.
-     * @param  {string}        objectId The object identifier.
-     * @return {Promise<void>}          A promise of the work completing.
+     * @param  {string}        objectId     The object identifier.
+     * @param  {boolean}       failOnError  Indicates that an error should be raised if an error is encountered.
+     * @return {Promise<void>}              A promise of the work completing.
      */
-    private loadConfigurationObjectWrapperFromApi(objectId);
-    /**
-     * Checks for cache timeouts.
-     */
-    private checkCacheTimeouts();
-    /**
-     * Checks the bearer token for expiry and, if expired, refreshes.
-     * @return {Promise<void>} A promise of the work completing.
-     */
-    private checkBearerToken();
+    private loadConfigurationObjectWrapperFromApi(objectId, failOnError?);
     /**
      * Checks to see if the environment exists.
      * @param {string} environmentId A value indicating that the environment exists.
@@ -64,7 +61,7 @@ export declare class ClocoClient {
      * @param  {string}       objectId The object identifier.
      * @return {ConfigObject}          The congif object metadata.
      */
-    private getConfigObject(objectId);
+    private getConfigObjectMetadata(objectId);
     /**
      * Encodes and encrypts an item ready to send to the API.
      * @param  {string} objectId The object identifier.

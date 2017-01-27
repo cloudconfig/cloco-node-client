@@ -34,7 +34,7 @@ export class AesEncryptor implements IEncryptor {
      Logger.log.debug("AesEncryptor.encrypt: start.");
 
      if (!this.key) {
-       throw new EncryptionError("Encryptionkey not available.", "AES");
+       throw new EncryptionError("Encryptionkey not available.", "AES256");
      }
 
      let cipher: Crypto.Cipher = Crypto.createCipher("aes256", this.key);
@@ -54,7 +54,7 @@ export class AesEncryptor implements IEncryptor {
      Logger.log.debug("AesEncryptor.decrypt: start.");
 
      if (!this.key) {
-       throw new EncryptionError("Encryptionkey not available.", "AES");
+       throw new EncryptionError("Encryptionkey not available.", "AES256");
      }
 
      try {
@@ -69,7 +69,7 @@ export class AesEncryptor implements IEncryptor {
        return decrypted;
      } catch (e) {
        Logger.log.error(`AesEncryptor.decrypt: Failed to decrypt: ${e}`);
-       throw new EncryptionError(`Failed to decrypt: ${e}`, "AES");
+       throw new EncryptionError(`Failed to decrypt: ${e}`, "AES256");
      }
   }
 }

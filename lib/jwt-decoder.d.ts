@@ -27,5 +27,5 @@ export declare class JwtDecoder {
      * Checks the token for expiry.
      * @param {number} offsetSeconds A number of seconds to use as an offset.
      */
-    private isTokenExpired(offsetSeconds?);
+    private checkTokenExpiry(offsetSeconds?);
 }
