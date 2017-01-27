@@ -24,3 +24,12 @@ build:
     - npm run gulp istanbul:ci
 
 integrations:
+    notifications:
+      - integrationName: slack-cloco
+        type: slack
+        recipients:
+          - "#build"
+        on_success: always
+        on_failure: always
+        on_start: never
+        on_pull_request: never
