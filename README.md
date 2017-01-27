@@ -158,6 +158,7 @@ Run the unit tests with jasmine:
 - `0.1.3` Clean up of build files, removes final console.logs.
 - `0.2.0` Major breaking rebuild.  Aligns with V1.0.0 cloco API.
 - `0.3.0` Non-breaking update, aligns AES encryption with openssl.
+- `0.3.1` Non-breaking update, additional test coverage and small fixes.
 
 # License
 Copyright (c) 2016 345 Systems LLP

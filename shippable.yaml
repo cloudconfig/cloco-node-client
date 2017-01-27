@@ -1,0 +1,26 @@
+language: node_js
+
+node_js:
+  - "6.9.1"
+
+branches:
+  only:
+    - feature/*
+    - hotfix/*
+    - master
+    - bug/*
+
+build:
+  cache: true
+  cache_dir_list:
+    - $SHIPPABLE_BUILD_DIR/node_modules
+  pre_ci:
+    - echo "pre-cli - no actions to perform"
+  ci:
+    - npm install --unsafe-perm
+    - npm run build
+    - npm run gulp jasmine:ci
+  post_ci:
+    - npm run gulp istanbul:ci
+
+integrations:
