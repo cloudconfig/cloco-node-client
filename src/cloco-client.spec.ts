@@ -5,6 +5,7 @@
  *   unit tests for the cloco client.
  */
 import * as bunyan from "bunyan";
+import * as shell from "shelljs";
 import { JwtGenerator } from "./test/jwt-generator";
 import { AesEncryptor } from "./encryption/aes-encryptor";
 import { ApiClientMock } from "./test/api-client-mock";
@@ -157,6 +158,86 @@ describe("ClocoClient unit tests", function(): void {
       });
   });
 
+  it("init: successful initialization, loads application and config object, cache on disk.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+      let filenames: string[] = [];
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let echoSpy: jasmine.Spy = spyOn(shell, "echo").and.callFake((): any => {
+        let result: any = {};
+        result.to = (f: string): void => {
+          filenames.push(f);
+          return;
+        };
+        return result;
+      });
+
+      client.init()
+      .then(() => {
+        expect(client.app).toEqual(app);
+        expect(Cache.current.items.length).toEqual(1);
+        expect(Cache.current.items[0].value).toEqual(cob.configurationData);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(1);
+        expect(filenames.length).toEqual(2);
+        expect(filenames[0]).toEqual("~/.cloco/cache/application_application");
+        done();
+      })
+      .catch((e: Error) => {
+        console.log(e);
+        fail("error not expected");
+        done();
+      });
+  });
+
+  it("init: successful initialization, loads application and config object, fail to cache on disk.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+      let filenames: string[] = [];
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let echoSpy: jasmine.Spy = spyOn(shell, "echo").and.callFake((): any => {
+        let result: any = {};
+        result.to = (f: string): void => {
+          filenames.push(f);
+          throw new Error("disk-error");
+        };
+        return result;
+      });
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(false);
+
+      client.init()
+      .then(() => {
+        fail("expect error to have been thrown.");
+        done();
+      })
+      .catch((e: Error) => {
+        expect(e.message).toEqual("disk-error");
+        expect(client.app).toEqual(app);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(0);
+        expect(echoSpy).toHaveBeenCalledTimes(1);
+        expect(testSpy).toHaveBeenCalledTimes(0);
+        expect(filenames.length).toEqual(1);
+        expect(filenames[0]).toEqual("~/.cloco/cache/application_application");
+        done();
+      });
+  });
+
   it("init: failure to load application, error.", function(done: () => void): void {
       let client: ClocoClient = new ClocoClient(options);
       spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
@@ -178,6 +259,147 @@ describe("ClocoClient unit tests", function(): void {
         expect(Cache.current.items.length).toEqual(0);
         expect(getAppSpy).toHaveBeenCalledTimes(1);
         expect(getCobSpy).toHaveBeenCalledTimes(0);
+        done();
+      });
+  });
+
+  it("init: failure to load application, load from disk, success.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+      let filenames: string[] = [];
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
+        .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(true);
+      let catSpy: jasmine.Spy = spyOn(shell, "cat").and.returnValue(JSON.stringify(app));
+      let echoSpy: jasmine.Spy = spyOn(shell, "echo").and.callFake((): any => {
+        let result: any = {};
+        result.to = (f: string): void => {
+          filenames.push(f);
+          return;
+        };
+        return result;
+      });
+
+      client.init()
+      .then(() => {
+        expect(client.app.applicationIdentifier).toEqual(app.applicationIdentifier);
+        expect(Cache.current.items.length).toEqual(1);
+        expect(Cache.current.items[0].value).toEqual(cob.configurationData);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(1);
+        expect(testSpy).toHaveBeenCalledTimes(1);
+        expect(catSpy).toHaveBeenCalledTimes(1);
+        expect(filenames.length).toEqual(1);
+        done();
+      })
+      .catch((e: Error) => {
+        console.log(e);
+        fail("error not expected");
+        done();
+      });
+  });
+
+  it("init: failure to load application, load from disk, file not found, fail.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
+        .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(false);
+      let catSpy: jasmine.Spy = spyOn(shell, "cat").and.returnValue(JSON.stringify(app));
+
+      client.init()
+      .then(() => {
+        fail("expect error to have been thrown.");
+        done();
+      })
+      .catch((e: Error) => {
+        expect(e.message).toEqual("app-error");
+        expect(client.app).toEqual(undefined);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(0);
+        expect(testSpy).toHaveBeenCalledTimes(1);
+        expect(catSpy).toHaveBeenCalledTimes(0);
+        done();
+      });
+  });
+
+  it("init: failure to load application, load from disk, invalid JSON, fail.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
+        .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(true);
+      let catSpy: jasmine.Spy = spyOn(shell, "cat").and.returnValue("{invalid-JSON]");
+
+      client.init()
+      .then(() => {
+        fail("expect error to have been thrown.");
+        done();
+      })
+      .catch((e: Error) => {
+        expect(e.message).toEqual("Unexpected token i in JSON at position 1");
+        expect(client.app).toEqual(undefined);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(0);
+        expect(testSpy).toHaveBeenCalledTimes(1);
+        expect(catSpy).toHaveBeenCalledTimes(1);
+        done();
+      });
+  });
+
+  it("init: failure to load application, load from disk, disk read fails, fail.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
+        .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(true);
+      let catSpy: jasmine.Spy = spyOn(shell, "cat").and.callFake((): void => {
+        throw new Error("cat-error");
+      });
+
+      client.init()
+      .then(() => {
+        fail("expect error to have been thrown.");
+        done();
+      })
+      .catch((e: Error) => {
+        expect(e.message).toEqual("cat-error");
+        expect(client.app).toEqual(undefined);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(0);
+        expect(testSpy).toHaveBeenCalledTimes(1);
+        expect(catSpy).toHaveBeenCalledTimes(1);
         done();
       });
   });
@@ -340,6 +562,104 @@ describe("ClocoClient unit tests", function(): void {
       });
   });
 
+  it("init: failure to load config, use disk cache, success.", function(done: () => void): void {
+
+      options.useDiskCaching = true;
+      let filenames: string[] = [];
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject")
+        .and.returnValue(ApiClientMock.getConfigObject(cob, new Error("cob-error")));
+      let testSpy: jasmine.Spy = spyOn(shell, "test").and.returnValue(true);
+      let catSpy: jasmine.Spy = spyOn(shell, "cat").and.returnValue(JSON.stringify(cob));
+      let echoSpy: jasmine.Spy = spyOn(shell, "echo").and.callFake((): any => {
+        let result: any = {};
+        result.to = (f: string): void => {
+          filenames.push(f);
+          return;
+        };
+        return result;
+      });
+
+      client.init()
+      .then(() => {
+        expect(client.app.applicationIdentifier).toEqual(app.applicationIdentifier);
+        expect(Cache.current.items.length).toEqual(1);
+        expect(Cache.current.items[0].value).toEqual(cob.configurationData);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(1);
+        expect(testSpy).toHaveBeenCalledTimes(1);
+        expect(catSpy).toHaveBeenCalledTimes(1);
+        expect(echoSpy).toHaveBeenCalledTimes(1);
+        expect(filenames.length).toEqual(1);
+        done();
+      })
+      .catch((e: Error) => {
+        console.log(e);
+        fail("error not expected");
+        done();
+      });
+  });
+
+  it("init: failure to decrypt config, fail.", function(done: () => void): void {
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+      spyOn(client, "decryptAndDecode").and.callFake((): void => {
+        throw new Error("decrypt-error");
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+
+      client.init()
+      .then(() => {
+        fail("expect error to have been thrown.");
+        done();
+      })
+      .catch((e: Error) => {
+        expect(e.message).toEqual("decrypt-error");
+        expect(client.app).toEqual(app);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(1);
+        done();
+      });
+  });
+
+  it("init: load config, no item added to cache, success.", function(done: () => void): void {
+
+      let client: ClocoClient = new ClocoClient(options);
+      spyOn(client, "checkCacheTimeouts").and.callFake((): void => {
+        return;
+      });
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let addItemSpy: jasmine.Spy = spyOn(Cache.current, "addItem").and.returnValue(undefined);
+
+      client.init()
+      .then(() => {
+        expect(client.app).toEqual(app);
+        expect(Cache.current.items.length).toEqual(0);
+        expect(getAppSpy).toHaveBeenCalledTimes(1);
+        expect(getCobSpy).toHaveBeenCalledTimes(1);
+        expect(addItemSpy).toHaveBeenCalledTimes(1);
+        done();
+      })
+      .catch((e: Error) => {
+        fail("expect error to have been thrown.");
+        done();
+      });
+  });
+
   it("checkCacheTimeouts: cache item expired, reloads the config.", function(done: () => void): void {
 
       let client: ClocoClient = new ClocoClient(options);
@@ -359,6 +679,38 @@ describe("ClocoClient unit tests", function(): void {
 
           client.checkCacheTimeouts();
           expect(getCobSpy).toHaveBeenCalledTimes(2);
+          done();
+        })
+        .catch((e: Error) => {
+          console.log(e);
+          fail("error not expected");
+          done();
+        });
+  });
+
+  it("checkCacheTimeouts: cache item not expired, reload config, no update.", function(done: () => void): void {
+
+      let client: ClocoClient = new ClocoClient(options);
+
+      let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
+      let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
+      let dispatchSpy: jasmine.Spy = spyOn(client.onConfigurationLoaded, "dispatch").and.callThrough();
+
+      client.init()
+        .then(() => {
+          expect(Cache.current.items.length).toEqual(1);
+          expect(getCobSpy).toHaveBeenCalledTimes(1);
+
+          // the client is initialized now, so set an expiry on the cache item
+          let item: CacheItem = Cache.current.items[0];
+          item.expires = new Date();
+          item.expires.setDate(item.expires.getDate() - 1); // set to be expired
+
+          spyOn(Cache.current, "addItem").and.returnValue(undefined); // no item added to cache
+
+          client.checkCacheTimeouts();
+          expect(getCobSpy).toHaveBeenCalledTimes(2); // shows that the config loaded twice.
+          expect(dispatchSpy).toHaveBeenCalledTimes(1); // shows that the config published once.
           done();
         })
         .catch((e: Error) => {

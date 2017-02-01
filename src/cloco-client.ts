@@ -4,6 +4,7 @@
  *
  *   Cloco client, used to retrieve configuration data.
  */
+import * as shell from "shelljs";
 import { Cache } from "./cache/cache";
 import { CacheItem } from "./cache/cache-item";
 import { Logger } from "./logging/logger";
@@ -150,12 +151,27 @@ export class ClocoClient {
     private async initializeApplication(): Promise<void> {
 
       Logger.log.debug(`ClocoClient.initializeApplication: start.`);
+      let filename: string = `~/.cloco/cache/application_${this.options.application}`;
 
       try {
         this.app = await ApiClient.getApplication(this.options);
+
+        // write to disk cache if in options.
+        if (this.options.useDiskCaching) {
+          Logger.log.debug(`ClocoClient.initializeApplication: writing application ${this.options.application} to disk.`);
+          let s: any = shell as any; // incorrect typing.
+          s.echo(JSON.stringify(this.app)).to(filename);
+        }
       } catch (e) {
-        Logger.log.error(e, "ClocoClient.initializeApplication: error encountered.");
-        throw e;
+        Logger.log.error(e, `ClocoClient.initializeApplication: error loading application ${this.options.application}.`);
+
+        // load from disk if in cache
+        if (!this.app && this.options.useDiskCaching && shell.test("-f", filename)) {
+            Logger.log.debug(`ClocoClient.initializeApplication: loading application ${this.options.application} from disk.`);
+            this.app = JSON.parse(shell.cat(filename));
+        } else {
+          throw e;
+        }
       }
 
       Logger.log.debug(`ClocoClient.initializeApplication: complete.`);
@@ -181,19 +197,20 @@ export class ClocoClient {
     /**
      * Loads the single configuration object from the server.
      * @param  {string}        objectId     The object identifier.
-     * @param  {boolean}       failOnError  Indicates that an error should be raised if an error is encountered.
+     * @param  {boolean}       initializing Indicates that an error should be raised if an error is encountered.
      * @return {Promise<void>}              A promise of the work completing.
      */
-    private async loadConfigurationObjectWrapperFromApi(objectId: string, failOnError?: boolean): Promise<void> {
+    private async loadConfigurationObjectWrapperFromApi(objectId: string, initializing?: boolean): Promise<void> {
 
       Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: start.`);
+      let filename: string = `~/.cloco/cache/configuration_${this.options.application}_${objectId}_${this.options.environment}`;
+      let wrapper: ConfigObjectWrapper;
 
       try {
-
-        Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: Checking bearer token.`);
-
+        // load the configuration object wrapper or retrieve from disk cache.
         Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: Requesting configuration item '${objectId}'.`);
-        let wrapper: ConfigObjectWrapper = await ApiClient.getConfigObject(this.options, objectId);
+        wrapper = await ApiClient.getConfigObject(this.options, objectId);
+
         Logger.log.debug(
           `ClocoClient.loadConfigurationObjectWrapperFromApi: Received configuration item '${objectId}'.`, wrapper);
         Logger.log.debug(
@@ -201,6 +218,28 @@ export class ClocoClient {
           `ClocoClient.loadConfigurationObjectWrapperFromApi: Configuration item '${objectId}' type is '${typeof wrapper.configurationData}'.`,
           wrapper);
 
+        if (this.options.useDiskCaching) {
+          Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: writing configuration '${objectId}' to disk.`);
+          let s: any = shell as any; // incorrect typing.
+          s.echo(JSON.stringify(wrapper)).to(filename);
+        }
+      } catch (e) {
+        this.onError.dispatch(this, e);
+        Logger.log.error(e, "ClocoClient.loadConfigurationObjectWrapperFromApi: Error encountered loading configuration from api.");
+        if (initializing) {
+          if (this.options.useDiskCaching && shell.test("-f", filename)) {
+            wrapper = JSON.parse(shell.cat(filename));
+          } else {
+            throw e;
+          }
+        } else {
+          // the error is dispatched, allow processing to continue.
+          return;
+        }
+      }
+
+      // by this point we either have a config object wrapper or will have exited.
+      try {
         let item: CacheItem = Cache.current.addItem(
           wrapper.objectIdentifier, this.decryptAndDecode(wrapper), wrapper.revisionNumber, this.options.ttl);
 
@@ -212,8 +251,8 @@ export class ClocoClient {
         }
       } catch (e) {
         this.onError.dispatch(this, e);
-        Logger.log.error(e, "ClocoClient.loadConfigurationObjectWrapperFromApi");
-        if (failOnError) {
+        Logger.log.error(e, "ClocoClient.loadConfigurationObjectWrapperFromApi: error processing configuration data.");
+        if (initializing) {
           throw e;
         }
       }

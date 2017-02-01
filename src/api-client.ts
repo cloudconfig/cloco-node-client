@@ -29,6 +29,7 @@ export class ApiClient {
     Logger.log.debug("ApiClient.getApplication: start");
 
     // check the bearer token before making the call
+    Logger.log.debug(`ApiClient.getApplication: Checking bearer token.`);
     await ApiClient.checkBearerToken(options);
 
     // initialise the restify client.
@@ -67,6 +68,7 @@ export class ApiClient {
     Logger.log.debug("ApiClient.getConfigObject: start");
 
     // check the bearer token before making the call
+    Logger.log.debug(`ApiClient.getConfigObject: Checking bearer token.`);
     await ApiClient.checkBearerToken(options);
 
     // initialise the restify client.
@@ -107,6 +109,7 @@ export class ApiClient {
     Logger.log.debug("ApiClient.putConfigObject: start");
 
     // check the bearer token before making the call
+    Logger.log.debug(`ApiClient.putConfigObject: Checking bearer token.`);
     await ApiClient.checkBearerToken(options);
 
     // initialise the restify client.
