@@ -43,7 +43,8 @@ var options = {
   environment: 'dev',
   log: logger,
   subscription: "my-subscription",
-  ttl: 60
+  ttl: 60,
+  useDiskCaching: true | false
 };
 
 // instantiate the client and subscribe to the menu.
@@ -65,6 +66,7 @@ log | The log provider. | Optional.  Defaults to a new bunyan.Logger with basic 
 subscription | The name of your cloco subscription.  | Optional, but if not supplied will use the machine default.
 ttl | The time in seconds for items to live in the cache before refreshing. | Optional, if not supplied then cache items will never expire.
 url | The cloco API url. | Optional.  Will default to the public hosted cloco API.  Use this to override for on-premise installations of cloco.
+useDiskCaching | Indicates whether disk caching is used. | Optional.  Will default to false.  When set to true any information received from the API will be copied to disk, and will be loaded from disk on app start if the API cannot be contacted.
 
 ## Credentials
 
