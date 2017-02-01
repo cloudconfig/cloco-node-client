@@ -4,8 +4,8 @@
  *
  *   Static access to local cloco settings.
  */
-import * as shell from "shelljs";
 import * as fs from "fs";
+import { FileSystem } from "./file-system";
 import { Logger } from "./logging/logger";
 import { PassthroughEncryptor } from "./encryption/passthrough-encryptor";
 import { SettingsError } from "./settings-error";
@@ -74,17 +74,15 @@ export class Settings {
    * @return {string} The bearer token.
    */
   public static getBearerToken(): string {
-    return Settings.readFileContent("~/.cloco/config/cloco_token");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/cloco_token`);
   }
 
   /**
    * Stores the bearer token in the local config store.
    * @param {string} token The bearer token.
    */
-  public static storeBearerToken(token: string): void {
-    Settings.ensureLocalDirs();
-    let s: any = shell as any; // incorrect typing.
-    s.echo(token).to("~/.cloco/config/cloco_token");
+  public static async storeBearerToken(token: string): Promise<void> {
+    await FileSystem.writeFile(`${process.env.HOME}/.cloco/config/cloco_token`, token);
   }
 
   /**
@@ -92,7 +90,7 @@ export class Settings {
    * @return {string} The refresh token.
    */
   public static getRefreshToken(): string {
-    return Settings.readFileContent("~/.cloco/config/cloco_refresh_token");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/cloco_refresh_token`);
   }
 
   /**
@@ -100,7 +98,7 @@ export class Settings {
    * @return {string} The subscription id.
    */
   public static getDefaultSubscription(): string {
-    return Settings.readFileContent("~/.cloco/config/subscription");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/subscription`);
   }
 
   /**
@@ -108,7 +106,7 @@ export class Settings {
    * @return {string} The application id.
    */
   public static getDefaultApplication(): string {
-    return Settings.readFileContent("~/.cloco/config/application");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/application`);
   }
 
   /**
@@ -116,7 +114,7 @@ export class Settings {
    * @return {string} The environment id.
    */
   public static getDefaultEnvironment(): string {
-    return Settings.readFileContent("~/.cloco/config/environment");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/environment`);
   }
 
   /**
@@ -124,7 +122,7 @@ export class Settings {
    * @return {string} The default cloco API url.
    */
   public static getDefaultUrl(): string {
-    return Settings.readFileContent("~/.cloco/config/url");
+    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/url`);
   }
 
   /**
@@ -134,8 +132,8 @@ export class Settings {
    */
   private static readFileContent(path: string): string {
     Settings.ensureLocalDirs();
-    if (shell.test("-f", path)) {
-      let content: string = shell.cat(path);
+    if (fs.existsSync(path)) {
+      let content: string = fs.readFileSync(path, "utf8");
       content = content.replace(/\n$/, "");
       return content;
     } else {
@@ -147,10 +145,14 @@ export class Settings {
    * Ensures that the local config directories exist.
    */
   private static ensureLocalDirs(): void {
-      let path: string = "~/.cloco/config";
-      shell.mkdir("-p", path);
+      let path: string = `${process.env.HOME}/.cloco/config`;
+      if (!fs.existsSync(path)) {
+        fs.mkdir(path);
+      }
 
-      path = "~/.cloco/cache";
-      shell.mkdir("-p", path);
+      path = `${process.env.HOME}/.cloco/cache`;
+      if (!fs.existsSync(path)) {
+        fs.mkdir(path);
+      }
   }
 }

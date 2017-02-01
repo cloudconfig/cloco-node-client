@@ -4,11 +4,12 @@
  *
  *   Cloco client, used to retrieve configuration data.
  */
-import * as shell from "shelljs";
+import * as fs from "fs";
 import { Cache } from "./cache/cache";
 import { CacheItem } from "./cache/cache-item";
 import { Logger } from "./logging/logger";
 import { ClocoApp, ConfigObjectWrapper, ConfigObject } from "./types/clocoapp";
+import { FileSystem } from "./file-system";
 import { IOptions } from "./types/ioptions";
 import { ApiClient } from "./api-client";
 import { Settings } from "./settings";
@@ -151,7 +152,7 @@ export class ClocoClient {
     private async initializeApplication(): Promise<void> {
 
       Logger.log.debug(`ClocoClient.initializeApplication: start.`);
-      let filename: string = `~/.cloco/cache/application_${this.options.application}`;
+      let filename: string = `${process.env.HOME}/.cloco/cache/application_${this.options.application}`;
 
       try {
         this.app = await ApiClient.getApplication(this.options);
@@ -159,16 +160,16 @@ export class ClocoClient {
         // write to disk cache if in options.
         if (this.options.useDiskCaching) {
           Logger.log.debug(`ClocoClient.initializeApplication: writing application ${this.options.application} to disk.`);
-          let s: any = shell as any; // incorrect typing.
-          s.echo(JSON.stringify(this.app)).to(filename);
+          await FileSystem.writeFile(filename, JSON.stringify(this.app));
         }
       } catch (e) {
         Logger.log.error(e, `ClocoClient.initializeApplication: error loading application ${this.options.application}.`);
 
         // load from disk if in cache
-        if (!this.app && this.options.useDiskCaching && shell.test("-f", filename)) {
+        if (!this.app && this.options.useDiskCaching && fs.existsSync(filename)) {
             Logger.log.debug(`ClocoClient.initializeApplication: loading application ${this.options.application} from disk.`);
-            this.app = JSON.parse(shell.cat(filename));
+            let cached: string = await FileSystem.readFile(filename);
+            this.app = JSON.parse(cached);
         } else {
           throw e;
         }
@@ -203,7 +204,8 @@ export class ClocoClient {
     private async loadConfigurationObjectWrapperFromApi(objectId: string, initializing?: boolean): Promise<void> {
 
       Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: start.`);
-      let filename: string = `~/.cloco/cache/configuration_${this.options.application}_${objectId}_${this.options.environment}`;
+      // tslint:disable-next-line:max-line-length
+      let filename: string = `${process.env.HOME}/.cloco/cache/configuration_${this.options.application}_${objectId}_${this.options.environment}`;
       let wrapper: ConfigObjectWrapper;
 
       try {
@@ -220,15 +222,16 @@ export class ClocoClient {
 
         if (this.options.useDiskCaching) {
           Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: writing configuration '${objectId}' to disk.`);
-          let s: any = shell as any; // incorrect typing.
-          s.echo(JSON.stringify(wrapper)).to(filename);
+          await FileSystem.writeFile(filename, JSON.stringify(wrapper));
         }
       } catch (e) {
         this.onError.dispatch(this, e);
         Logger.log.error(e, "ClocoClient.loadConfigurationObjectWrapperFromApi: Error encountered loading configuration from api.");
         if (initializing) {
-          if (this.options.useDiskCaching && shell.test("-f", filename)) {
-            wrapper = JSON.parse(shell.cat(filename));
+          if (this.options.useDiskCaching && fs.existsSync(filename)) {
+            Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: loading configuration '${objectId}' from disk.`);
+            let cached: string = await FileSystem.readFile(filename);
+            wrapper = JSON.parse(cached);
           } else {
             throw e;
           }

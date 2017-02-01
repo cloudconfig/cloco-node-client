@@ -2,7 +2,7 @@
  *   settings.spec.ts
  *   Copyright (c) 345 Systems LLP 2016, all rights reserved.
  */
-import * as shell from "shelljs";
+import * as fs from "fs";
 import { Settings } from "./settings";
 import { IOptions } from "./types/ioptions";
 import { Logger } from "./logging/logger";
@@ -19,15 +19,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: empty options set everything to default.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -49,15 +49,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: default url set blank, defaults to cloco prod value.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -74,15 +74,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: encryptor supplied, marks as supporting encryption.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -96,15 +96,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: default subscription empty, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -126,15 +126,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: default subscription empty, config file not available, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return false;
       });
 
@@ -156,15 +156,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: default application empty, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -186,15 +186,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: default environment empty, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -216,15 +216,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: stored bearer token empty, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -246,15 +246,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: stored refresh token empty, raises error.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -276,15 +276,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: tokens supplied, no error initializing tokens.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -300,15 +300,15 @@ describe("Settings unit tests", function(): void {
 
   it("setDefaults: credentials supplied, no error initializing tokens.", function(): void {
 
-      let spy: jasmine.Spy = spyOn(shell, "cat").and.callFake((path: string) => {
+      let spy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
         return "file-content";
       });
 
-      spyOn(shell, "mkdir").and.callFake((path: string) => {
+      spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      spyOn(shell, "test").and.callFake((path: string) => {
+      spyOn(fs, "existsSync").and.callFake((path: string) => {
         return true;
       });
 
@@ -326,21 +326,21 @@ describe("Settings unit tests", function(): void {
 
   it("storeBearerToken: credentials supplied, no error initializing tokens.", function(): void {
 
-      let mkdirSpy: jasmine.Spy = spyOn(shell, "mkdir").and.callFake((path: string) => {
+      let mkdirSpy: jasmine.Spy = spyOn(fs, "mkdir").and.callFake((path: string) => {
         return;
       });
 
-      let writeSpy: jasmine.Spy = spyOn(shell, "echo").and.callFake((content: string) => {
-        let result: any = {};
-        result.to = (p: string): void => {
-          return;
-        };
-        return result;
+      let existsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(true);
+
+      let writeSpy: jasmine.Spy = spyOn(fs, "writeFile")
+        .and.callFake((f: string, data: string, enc: string, callback: (err: Error) => void): any => {
+          callback(undefined);
       });
 
       Settings.storeBearerToken("token");
 
-      expect(mkdirSpy).toHaveBeenCalledTimes(2);
+      expect(mkdirSpy).toHaveBeenCalledTimes(0);
+      expect(existsSpy).toHaveBeenCalledTimes(0);
       expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 });
