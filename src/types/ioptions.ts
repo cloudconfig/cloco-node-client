@@ -76,4 +76,10 @@ export interface IOptions {
    * @type {boolean}
    */
   useEncryption?: boolean;
+
+  /**
+   * The API will cache the api results to disk.
+   * @type {boolean}
+   */
+  useDiskCaching?: boolean;
 }

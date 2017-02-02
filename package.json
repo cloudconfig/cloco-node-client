@@ -1,6 +1,6 @@
 {
   "name": "cloco-node-client",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A cloco client for distribution as an NPM package.",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -28,11 +28,8 @@
   "homepage": "https://github.com/cloudconfig/cloco-node-client#readme",
   "dependencies": {
     "jsonwebtoken": "^7.2.1",
-    "path": "^0.12.7",
     "restify": "^4.1.1",
-    "rxjs": "^5.0.0-rc.3",
-    "shelljs": "^0.7.5",
-    "url": "^0.11.0"
+    "rxjs": "^5.0.0-rc.3"
   },
   "devDependencies": {
     "@types/bunyan": "0.0.33",
@@ -40,7 +37,6 @@
     "@types/jsonwebtoken": "^7.2.0",
     "@types/node": "^6.0.50",
     "@types/restify": "^2.0.35",
-    "@types/shelljs": "^0.3.33",
     "event-stream": "^3.3.4",
     "gulp": "^3.9.1",
     "gulp-istanbul": "~1.1.1",

@@ -13,7 +13,7 @@ export declare class Settings {
      * Stores the bearer token in the local config store.
      * @param {string} token The bearer token.
      */
-    static storeBearerToken(token: string): void;
+    static storeBearerToken(token: string): Promise<void>;
     /**
      * Gets the refresh token from the local config store.
      * @return {string} The refresh token.

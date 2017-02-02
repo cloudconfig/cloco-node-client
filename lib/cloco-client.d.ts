@@ -47,10 +47,10 @@ export declare class ClocoClient {
     /**
      * Loads the single configuration object from the server.
      * @param  {string}        objectId     The object identifier.
-     * @param  {boolean}       failOnError  Indicates that an error should be raised if an error is encountered.
+     * @param  {boolean}       initializing Indicates that an error should be raised if an error is encountered.
      * @return {Promise<void>}              A promise of the work completing.
      */
-    private loadConfigurationObjectWrapperFromApi(objectId, failOnError?);
+    private loadConfigurationObjectWrapperFromApi(objectId, initializing?);
     /**
      * Checks to see if the environment exists.
      * @param {string} environmentId A value indicating that the environment exists.
