@@ -17,4 +17,14 @@ export declare class FileSystem {
      * @return {Promise<void>}          A promise of the work completing.
      */
     static writeFile(filename: string, data: string): Promise<void>;
+    /**
+     * Returns the user home path.
+     * @return {string} The user home path.
+     */
+    static getUserHome(): string;
+    /**
+     * Returns the platform.
+     * @return {string} The platform.
+     */
+    private static getPlatform();
 }

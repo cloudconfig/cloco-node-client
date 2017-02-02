@@ -152,7 +152,7 @@ export class ClocoClient {
     private async initializeApplication(): Promise<void> {
 
       Logger.log.debug(`ClocoClient.initializeApplication: start.`);
-      let filename: string = `${process.env.HOME}/.cloco/cache/application_${this.options.application}`;
+      let filename: string = `${FileSystem.getUserHome()}/.cloco/cache/application_${this.options.application}`;
 
       try {
         this.app = await ApiClient.getApplication(this.options);
@@ -205,7 +205,7 @@ export class ClocoClient {
 
       Logger.log.debug(`ClocoClient.loadConfigurationObjectWrapperFromApi: start.`);
       // tslint:disable-next-line:max-line-length
-      let filename: string = `${process.env.HOME}/.cloco/cache/configuration_${this.options.application}_${objectId}_${this.options.environment}`;
+      let filename: string = `${FileSystem.getUserHome()}/.cloco/cache/configuration_${this.options.application}_${objectId}_${this.options.environment}`;
       let wrapper: ConfigObjectWrapper;
 
       try {

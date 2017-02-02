@@ -64,4 +64,28 @@ export class FileSystem {
                 });
             });
     }
+
+    /**
+     * Returns the user home path.
+     * @return {string} The user home path.
+     */
+    public static getUserHome(): string {
+      Logger.log.debug(`FileSystem.getUserHome: start.`);
+
+      if (FileSystem.getPlatform() === "win32") {
+        Logger.log.debug(`FileSystem.getUserHome: returning win32 home directory.`);
+        return process.env.USERPROFILE;
+      } else {
+        Logger.log.debug(`FileSystem.getUserHome: returning default home directory.`);
+        return process.env.HOME;
+      }
+    }
+
+    /**
+     * Returns the platform.
+     * @return {string} The platform.
+     */
+    private static getPlatform(): string {
+      return process.platform;
+    }
 }

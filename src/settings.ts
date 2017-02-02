@@ -74,7 +74,7 @@ export class Settings {
    * @return {string} The bearer token.
    */
   public static getBearerToken(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/cloco_token`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/cloco_token`);
   }
 
   /**
@@ -82,7 +82,7 @@ export class Settings {
    * @param {string} token The bearer token.
    */
   public static async storeBearerToken(token: string): Promise<void> {
-    await FileSystem.writeFile(`${process.env.HOME}/.cloco/config/cloco_token`, token);
+    await FileSystem.writeFile(`${FileSystem.getUserHome()}/.cloco/config/cloco_token`, token);
   }
 
   /**
@@ -90,7 +90,7 @@ export class Settings {
    * @return {string} The refresh token.
    */
   public static getRefreshToken(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/cloco_refresh_token`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/cloco_refresh_token`);
   }
 
   /**
@@ -98,7 +98,7 @@ export class Settings {
    * @return {string} The subscription id.
    */
   public static getDefaultSubscription(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/subscription`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/subscription`);
   }
 
   /**
@@ -106,7 +106,7 @@ export class Settings {
    * @return {string} The application id.
    */
   public static getDefaultApplication(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/application`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/application`);
   }
 
   /**
@@ -114,7 +114,7 @@ export class Settings {
    * @return {string} The environment id.
    */
   public static getDefaultEnvironment(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/environment`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/environment`);
   }
 
   /**
@@ -122,7 +122,7 @@ export class Settings {
    * @return {string} The default cloco API url.
    */
   public static getDefaultUrl(): string {
-    return Settings.readFileContent(`${process.env.HOME}/.cloco/config/url`);
+    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/url`);
   }
 
   /**
@@ -145,12 +145,12 @@ export class Settings {
    * Ensures that the local config directories exist.
    */
   private static ensureLocalDirs(): void {
-      let path: string = `${process.env.HOME}/.cloco/config`;
+      let path: string = `${FileSystem.getUserHome()}/.cloco/config`;
       if (!fs.existsSync(path)) {
         fs.mkdir(path);
       }
 
-      path = `${process.env.HOME}/.cloco/cache`;
+      path = `${FileSystem.getUserHome()}/.cloco/cache`;
       if (!fs.existsSync(path)) {
         fs.mkdir(path);
       }
