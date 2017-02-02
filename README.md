@@ -6,6 +6,10 @@
 
 A cloco client for distribution as an NPM package, for incorporating into NodeJS applications.  
 
+## Documentation
+
+The documentation for cloco is available on GitHub pages [https://cloudconfig.github.io/cloco-docs/](https://cloudconfig.github.io/cloco-docs/).
+
 ## Prerequisites
 
 The following global prerequisites must exist:
