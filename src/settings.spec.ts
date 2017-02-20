@@ -49,6 +49,10 @@ describe("Settings unit tests", function(): void {
             return true;
         });
 
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
+        });
+
         Settings.setDefaults(options);
 
         expect(options.useEncryption).toEqual(false);
@@ -76,6 +80,10 @@ describe("Settings unit tests", function(): void {
             return true;
         });
 
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
+        });
+
         config.settings.url = "";
 
         Settings.setDefaults(options);
@@ -93,6 +101,10 @@ describe("Settings unit tests", function(): void {
             return true;
         });
 
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
+        });
+
         options.encryptor = new PassthroughEncryptor();
 
         Settings.setDefaults(options);
@@ -108,6 +120,10 @@ describe("Settings unit tests", function(): void {
 
         let fsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.callFake((path: string) => {
             return true;
+        });
+
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
         });
 
         config.preferences.subscription = "";
@@ -132,6 +148,10 @@ describe("Settings unit tests", function(): void {
             return false;
         });
 
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
+        });
+
         try {
             Settings.setDefaults(options);
             fail("expect failure because of no default subscription.");
@@ -150,6 +170,10 @@ describe("Settings unit tests", function(): void {
 
         let fsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.callFake((path: string) => {
             return true;
+        });
+
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
         });
 
         config.preferences.application = "";
@@ -174,6 +198,10 @@ describe("Settings unit tests", function(): void {
             return true;
         });
 
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
+        });
+
         config.preferences.environment = "";
 
         try {
@@ -194,6 +222,10 @@ describe("Settings unit tests", function(): void {
 
         let fsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.callFake((path: string) => {
             return true;
+        });
+
+        let readSpy: jasmine.Spy = spyOn(fs, "readFileSync").and.callFake((path: string) => {
+            return "some-config";
         });
 
         config.credentials.cloco_client_key = "";

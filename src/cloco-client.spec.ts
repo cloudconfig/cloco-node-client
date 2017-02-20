@@ -24,15 +24,24 @@ describe("ClocoClient unit tests", function(): void {
     let config: any;
     let options: IOptions;
     let configSpy: jasmine.Spy;
+    let readSpy: jasmine.Spy;
+    let existsSpy: jasmine.Spy;
     let app: ClocoApp;
     let cob: ConfigObjectWrapper;
     let aes: AesEncryptor;
     let getCobHitIndex: number;
+    let fileExists: boolean;
 
     beforeAll(function(done: () => void): void {
         Logger.init({});
         configSpy = spyOn(ini, "parse").and.callFake((path: string) => {
             return config;
+        });
+        existsSpy = spyOn(fs, "existsSync").and.callFake((path: string) => {
+            return fileExists;
+        });
+        readSpy = spyOn(fs, "readFileSync").and.callFake(() => {
+            return "some-config";
         });
         done();
     });
@@ -42,6 +51,7 @@ describe("ClocoClient unit tests", function(): void {
         Cache.init();
 
         getCobHitIndex = 0;
+        fileExists = true;
 
         options = {};
         options.tokens = { accessToken: "", refreshToken: "refresh-token" };
@@ -228,7 +238,7 @@ describe("ClocoClient unit tests", function(): void {
                 filenames.push(f);
                 callback(new Error("disk-error"));
             });
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(false);
+        fileExists = false;
 
         client.init()
             .then(() => {
@@ -242,7 +252,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(0);
                 expect(writeFileSpy).toHaveBeenCalledTimes(1);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(0);
                 expect(filenames.length).toEqual(1);
                 expect(filenames[0]).toEqual(`${process.env.HOME}/.cloco/cache/application_application`);
                 done();
@@ -287,7 +296,6 @@ describe("ClocoClient unit tests", function(): void {
         let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
             .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
         let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(true);
         let readFileSpy: jasmine.Spy = spyOn(fs, "readFile")
             .and.callFake((f: string, enc: string, callback: (err: Error, data: string) => void): void => {
                 callback(undefined, JSON.stringify(app));
@@ -305,7 +313,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(Cache.current.items[0].value).toEqual(cob.configurationData);
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(1);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(1);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 expect(filenames.length).toEqual(1);
                 done();
@@ -329,7 +336,7 @@ describe("ClocoClient unit tests", function(): void {
         let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
             .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
         let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(false);
+        fileExists = false;
         let readFileSpy: jasmine.Spy = spyOn(fs, "readFile")
             .and.callFake((f: string, enc: string, callback: (err: Error, data: string) => void): void => {
                 callback(undefined, JSON.stringify(app));
@@ -346,7 +353,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(Cache.current.items.length).toEqual(0);
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(0);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(1);
                 expect(readFileSpy).toHaveBeenCalledTimes(0);
                 done();
             });
@@ -364,7 +370,6 @@ describe("ClocoClient unit tests", function(): void {
         let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
             .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
         let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(true);
         let readFileSpy: jasmine.Spy = spyOn(fs, "readFile")
             .and.callFake((f: string, enc: string, callback: (err: Error, data: string) => void): void => {
                 callback(undefined, "{invalid-JSON]");
@@ -381,7 +386,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(Cache.current.items.length).toEqual(0);
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(0);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(1);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 done();
             });
@@ -399,7 +403,6 @@ describe("ClocoClient unit tests", function(): void {
         let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication")
             .and.returnValue(ApiClientMock.getApplication(app, new Error("app-error")));
         let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject").and.returnValue(ApiClientMock.getConfigObject(cob));
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(true);
         let readFileSpy: jasmine.Spy = spyOn(fs, "readFile")
             .and.callFake((f: string, enc: string, callback: (err: Error, data: string) => void): void => {
                 callback(new Error("cat-error"), undefined);
@@ -416,7 +419,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(Cache.current.items.length).toEqual(0);
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(0);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(1);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 done();
             });
@@ -593,7 +595,6 @@ describe("ClocoClient unit tests", function(): void {
         let getAppSpy: jasmine.Spy = spyOn(ApiClient, "getApplication").and.returnValue(ApiClientMock.getApplication(app));
         let getCobSpy: jasmine.Spy = spyOn(ApiClient, "getConfigObject")
             .and.returnValue(ApiClientMock.getConfigObject(cob, new Error("cob-error")));
-        let fileExistsSpy: jasmine.Spy = spyOn(fs, "existsSync").and.returnValue(true);
         let readFileSpy: jasmine.Spy = spyOn(fs, "readFile")
             .and.callFake((f: string, enc: string, callback: (err: Error, data: string) => void): void => {
                 callback(undefined, JSON.stringify(cob));
@@ -611,7 +612,6 @@ describe("ClocoClient unit tests", function(): void {
                 expect(Cache.current.items[0].value).toEqual(cob.configurationData);
                 expect(getAppSpy).toHaveBeenCalledTimes(1);
                 expect(getCobSpy).toHaveBeenCalledTimes(1);
-                expect(fileExistsSpy).toHaveBeenCalledTimes(1);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 expect(writeFileSpy).toHaveBeenCalledTimes(1);
                 expect(filenames.length).toEqual(1);

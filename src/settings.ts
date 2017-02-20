@@ -30,7 +30,7 @@ export class Settings {
         // check for local settings
         if (fs.existsSync(Settings.getConfigFilePath())) {
 
-            let config: any = ini.parse(Settings.getConfigFilePath());
+            let config: any = ini.parse(fs.readFileSync(Settings.getConfigFilePath(), "utf-8"));
 
             // load the url from config else use the default cloco one.
             options.url = options.url || config.settings.url;
