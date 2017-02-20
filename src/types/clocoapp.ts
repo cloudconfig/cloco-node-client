@@ -175,7 +175,7 @@ export class ClocoAppCoreDetails {
      * Indicates whether this is the default app in the subscription.
      * @type {boolean}
      */
-    public isDefault: boolean;
+    public isFavorite: boolean;
 }
 
 /**
