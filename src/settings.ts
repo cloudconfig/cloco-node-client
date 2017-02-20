@@ -5,154 +5,83 @@
  *   Static access to local cloco settings.
  */
 import * as fs from "fs";
+import * as ini from "ini";
 import { FileSystem } from "./file-system";
 import { Logger } from "./logging/logger";
 import { PassthroughEncryptor } from "./encryption/passthrough-encryptor";
 import { SettingsError } from "./settings-error";
-import { Tokens } from "./types/tokens";
+import { Credentials } from "./types/credentials";
 import { IOptions } from "./types/ioptions";
+import { Tokens } from "./types/tokens";
 
 export class Settings {
 
-  /**
-   * Loads the default settings from file.
-   */
-  public static setDefaults(options: IOptions): void {
+    /**
+     * Loads the default settings from file.
+     */
+    public static setDefaults(options: IOptions): void {
 
-    Logger.log.debug("Settings.setDefaults: start.");
+        Logger.log.debug("Settings.setDefaults: start.");
 
-    // default the encryptor to the passthrough encryptor if not set.
-    options.useEncryption = options.encryptor ? true : false;
-    options.encryptor = options.encryptor || new PassthroughEncryptor();
+        // default the encryptor to the passthrough encryptor if not set.
+        options.useEncryption = options.encryptor ? true : false;
+        options.encryptor = options.encryptor || new PassthroughEncryptor();
 
-    // load the url from config else use the default cloco one.
-    options.url = options.url || Settings.getDefaultUrl() || "https://api.cloco.io";
+        // check for local settings
+        if (fs.existsSync(Settings.getConfigFilePath())) {
 
-    // ensure that a subscription is set, either globally or on the options.
-    options.subscription = options.subscription || Settings.getDefaultSubscription();
-    if (!options.subscription) {
-      throw new SettingsError("Could not load setting: subscription.", "options.subscription");
+            let config: any = ini.parse(Settings.getConfigFilePath());
+
+            // load the url from config else use the default cloco one.
+            options.url = options.url || config.settings.url;
+            options.subscription = options.subscription || config.preferences.subscription;
+            options.application = options.application || config.preferences.application;
+            options.environment = options.environment || config.preferences.environment;
+
+            if (!options.credentials) {
+                options.credentials = new Credentials();
+                options.credentials.key = config.credentials.cloco_client_key;
+                options.credentials.secret = config.credentials.cloco_client_secret;
+            }
+
+            if (!options.tokens) {
+                options.tokens = new Tokens();
+            }
+        }
+
+        // if url not set then use the default cloco url.
+        options.url = options.url || "https://api.cloco.io";
+
+        // set the interval for checking the cache expiry.
+        options.cacheCheckInterval = options.cacheCheckInterval || 60000;
+
+        // ensure that a subscription is set.
+        if (!options.subscription) {
+            throw new SettingsError("Could not load setting: subscription.", "options.subscription");
+        }
+
+        // ensure that an application is set.
+        if (!options.application) {
+            throw new SettingsError("Could not load setting: application.", "options.application");
+        }
+
+        // ensure that an environment is set.
+        if (!options.environment) {
+            throw new SettingsError("Could not load setting: environment.", "options.environment");
+        }
+
+        if (!options.credentials || !options.credentials.key || !options.credentials.secret) {
+            throw new SettingsError("No credentials available", "options.credentials");
+        }
+
+        Logger.log.debug("Settings.setDefaults: end.");
     }
 
-    // ensure that an application is set, either globally or on the options.
-    options.application = options.application || Settings.getDefaultApplication();
-    if (!options.application) {
-      throw new SettingsError("Could not load setting: application.", "options.application");
+    /**
+     * Returns the path to the local ini file created by cloco-cli
+     * @return {string} [description]
+     */
+    private static getConfigFilePath(): string {
+        return `${FileSystem.getUserHome()}/.cloco/configuration`;
     }
-
-    // ensure that an environment is set, either globally or on the options.
-    options.environment = options.environment || Settings.getDefaultEnvironment();
-    if (!options.environment) {
-      throw new SettingsError("Could not load setting: environment.", "options.environment");
-    }
-
-    // set the interval for checking the cache expiry.
-    options.cacheCheckInterval = options.cacheCheckInterval || 60000;
-
-    // check the credentials and load the tokens if appropriate.
-    if (!options.tokens) {
-      options.tokens = new Tokens();
-      options.tokens.accessToken = Settings.getBearerToken();
-      options.tokens.refreshToken = Settings.getRefreshToken();
-    }
-
-    if (!options.credentials) {
-      if (!options.tokens.accessToken) {
-        throw new SettingsError("Could not load bearer token.", "options.tokens.accessToken");
-      }
-
-      if (!options.tokens.refreshToken) {
-        throw new SettingsError("Could not load refresh token.", "options.tokens.refreshToken");
-      }
-    }
-
-    Logger.log.debug("Settings.setDefaults: end.");
-  }
-
-  /**
-   * Reads the bearer token from the local config store.
-   * @return {string} The bearer token.
-   */
-  public static getBearerToken(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/cloco_token`);
-  }
-
-  /**
-   * Stores the bearer token in the local config store.
-   * @param {string} token The bearer token.
-   */
-  public static async storeBearerToken(token: string): Promise<void> {
-    await FileSystem.writeFile(`${FileSystem.getUserHome()}/.cloco/config/cloco_token`, token);
-  }
-
-  /**
-   * Gets the refresh token from the local config store.
-   * @return {string} The refresh token.
-   */
-  public static getRefreshToken(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/cloco_refresh_token`);
-  }
-
-  /**
-   * Gets the default subscription from the local config store.
-   * @return {string} The subscription id.
-   */
-  public static getDefaultSubscription(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/subscription`);
-  }
-
-  /**
-   * Gets the default application from the local config store.
-   * @return {string} The application id.
-   */
-  public static getDefaultApplication(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/application`);
-  }
-
-  /**
-   * Gets the default environment from the local config store.
-   * @return {string} The environment id.
-   */
-  public static getDefaultEnvironment(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/environment`);
-  }
-
-  /**
-   * Gets the default cloco API url from the local store (for on-prem installations).
-   * @return {string} The default cloco API url.
-   */
-  public static getDefaultUrl(): string {
-    return Settings.readFileContent(`${FileSystem.getUserHome()}/.cloco/config/url`);
-  }
-
-  /**
-   * Reads the content from a file.
-   * @param  {string} path The path of the file.
-   * @return {string}      The contents of the file.
-   */
-  private static readFileContent(path: string): string {
-    Settings.ensureLocalDirs();
-    if (fs.existsSync(path)) {
-      let content: string = fs.readFileSync(path, "utf8");
-      content = content.replace(/\n$/, "");
-      return content;
-    } else {
-      return undefined;
-    }
-  }
-
-  /**
-   * Ensures that the local config directories exist.
-   */
-  private static ensureLocalDirs(): void {
-      let path: string = `${FileSystem.getUserHome()}/.cloco/config`;
-      if (!fs.existsSync(path)) {
-        fs.mkdir(path);
-      }
-
-      path = `${FileSystem.getUserHome()}/.cloco/cache`;
-      if (!fs.existsSync(path)) {
-        fs.mkdir(path);
-      }
-  }
 }

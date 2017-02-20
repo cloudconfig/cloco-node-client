@@ -35,12 +35,6 @@ export declare class ApiClient {
      * @param  {IOptions}          options The initialization options.
      * @return {Promise<AccessTokenResponse>}         A promise of the access token.
      */
-    private static getAccessTokenFromRefreshToken(options);
-    /**
-     * Refreshes the bearer token.
-     * @param  {IOptions}          options The initialization options.
-     * @return {Promise<AccessTokenResponse>}         A promise of the access token.
-     */
     private static getAccessTokenFromClientCredentials(options);
     /**
      * Gets the restify options based on the settings.

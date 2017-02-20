@@ -6,6 +6,7 @@
  */
 import * as bunyan from "bunyan";
 import * as fs from "fs";
+import * as ini from "ini";
 import { JwtGenerator } from "./test/jwt-generator";
 import { AesEncryptor } from "./encryption/aes-encryptor";
 import { ApiClientMock } from "./test/api-client-mock";
@@ -20,6 +21,7 @@ import { Settings } from "./settings";
 
 describe("ClocoClient unit tests", function(): void {
 
+    let config: any;
     let options: IOptions;
     let configSpy: jasmine.Spy;
     let app: ClocoApp;
@@ -29,8 +31,8 @@ describe("ClocoClient unit tests", function(): void {
 
     beforeAll(function(done: () => void): void {
         Logger.init({});
-        configSpy = spyOn(Settings, "readFileContent").and.callFake((path: string) => {
-            return "file-content";
+        configSpy = spyOn(ini, "parse").and.callFake((path: string) => {
+            return config;
         });
         done();
     });
@@ -48,6 +50,21 @@ describe("ClocoClient unit tests", function(): void {
         options.application = "application";
         options.environment = "test";
         options.cacheCheckInterval = -1;
+
+        config = {
+            credentials: {
+                cloco_client_key: "api-key",
+                cloco_client_secret: "api-secret",
+            },
+            preferences: {
+                application: "config-application",
+                environment: "config-environment",
+                subscription: "config-subscription",
+            },
+            settings: {
+                url: "cloco-url",
+            },
+        };
 
         app = {
             applicationIdentifier: "test-app",
@@ -118,7 +135,7 @@ describe("ClocoClient unit tests", function(): void {
 
         options.environment = "";
 
-        let envSpy: jasmine.Spy = spyOn(Settings, "getDefaultEnvironment").and.callFake((): void => {
+        let envSpy: jasmine.Spy = spyOn(Settings, "getConfigFilePath").and.callFake((): void => {
             throw new Error("unit-test-error");
         });
 

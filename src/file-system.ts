@@ -66,19 +66,31 @@ export class FileSystem {
     }
 
     /**
+     * Ensures that the local config directories exist.
+     */
+    public static ensureDirectory(path: string): void {
+        Logger.log.debug("FileSystem.ensureDirectory: start.");
+        if (!fs.existsSync(path)) {
+            Logger.log.debug(`FileSystem.ensureDirectory: creating local folder '${path}'.`);
+            fs.mkdir(path);
+        }
+        Logger.log.debug("FileSystem.ensureDirectory: end.");
+    }
+
+    /**
      * Returns the user home path.
      * @return {string} The user home path.
      */
     public static getUserHome(): string {
-      Logger.log.debug(`FileSystem.getUserHome: start.`);
+        Logger.log.debug(`FileSystem.getUserHome: start.`);
 
-      if (FileSystem.getPlatform() === "win32") {
-        Logger.log.debug(`FileSystem.getUserHome: returning win32 home directory.`);
-        return process.env.USERPROFILE;
-      } else {
-        Logger.log.debug(`FileSystem.getUserHome: returning default home directory.`);
-        return process.env.HOME;
-      }
+        if (FileSystem.getPlatform() === "win32") {
+            Logger.log.debug(`FileSystem.getUserHome: returning win32 home directory.`);
+            return process.env.USERPROFILE;
+        } else {
+            Logger.log.debug(`FileSystem.getUserHome: returning default home directory.`);
+            return process.env.HOME;
+        }
     }
 
     /**
@@ -86,6 +98,6 @@ export class FileSystem {
      * @return {string} The platform.
      */
     private static getPlatform(): string {
-      return process.platform;
+        return process.platform;
     }
 }
