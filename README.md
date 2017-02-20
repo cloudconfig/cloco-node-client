@@ -74,7 +74,13 @@ useDiskCaching | Indicates whether disk caching is used. | Optional.  Will defau
 
 ## Credentials
 
-We recommend that you authorize your machine using the cloco-bash tool, but you can set the cloco credentials via the options.  You can generate API credentials via the cloco admin UI or via the API.  Please ensure that the credentials are kept safe.
+We recommend that you set machine credentials using the cloco-cli tool, but you can set the cloco credentials via the options.  You can generate API credentials via the cloco admin UI or via the API.  Please ensure that the credentials are kept safe.
+
+To set credentials via cloco-cli
+
+    $ cloco init --key $CLOCO_CLIENT_KEY --secret $CLOCO_CLIENT_SECRET
+
+Alternatively, you can pass credentials into the cloco-node-client as follows:
 
 ````
 // initialize the credentials if supplied via environment variables.
@@ -166,6 +172,7 @@ Run the unit tests with jasmine:
 - `0.3.0` Non-breaking update, aligns AES encryption with openssl.
 - `0.3.1` Non-breaking update, additional test coverage and small fixes.
 - `0.4.0` Non-breaking update, add local disk caching of configuration.
+- `0.5.0` Major update, uses the ini file format of the cloco-cli tool.
 
 # License
 Copyright (c) 2016 345 Systems LLP
