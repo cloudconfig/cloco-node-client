@@ -175,5 +175,5 @@ Run the unit tests with jasmine:
 - `0.5.0` Major update, uses the ini file format of the cloco-cli tool.
 
 # License
-Copyright (c) 2016 345 Systems LLP
+Copyright (c) 2016-2017 345 Systems LLP
 Licensed under the MIT license.
