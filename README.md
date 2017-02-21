@@ -167,17 +167,6 @@ Run the unit tests with jasmine:
 
 We welcome contributions from the community.  Feature requests and bug reports should be raised as issues on GitHub.  If you wish to contribute a fix please fork, make your changes and issue a PR.
 
-# Version Notes
-- `0.1.0` Initial version, supports read-only access to a configuration object.
-- `0.1.1` Minor fixes.
-- `0.1.2` Fixes to allow the code to work with cloco-node-example.
-- `0.1.3` Clean up of build files, removes final console.logs.
-- `0.2.0` Major breaking rebuild.  Aligns with V1.0.0 cloco API.
-- `0.3.0` Non-breaking update, aligns AES encryption with openssl.
-- `0.3.1` Non-breaking update, additional test coverage and small fixes.
-- `0.4.0` Non-breaking update, add local disk caching of configuration.
-- `0.5.0` Major update, uses the ini file format of the cloco-cli tool.
-
 # License
 Copyright (c) 2016-2017 345 Systems LLP
 Licensed under the MIT license.
