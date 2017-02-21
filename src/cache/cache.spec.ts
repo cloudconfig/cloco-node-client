@@ -16,7 +16,7 @@ describe("Cache unit tests", function(): void {
     });
 
     afterAll(function(): void {
-      Cache.current = undefined;
+        Cache.current = undefined;
     });
 
     it("init: cache singleton should be created successfully.", function(): void {
@@ -115,7 +115,7 @@ describe("Cache unit tests", function(): void {
         item.value = "value";
 
         let cache: Cache = new Cache();
-        cache.items = [{key: "test", value: "old"} as CacheItem];
+        cache.items = [{ key: "test", value: "old" } as CacheItem];
         cache.add(item);
 
         expect(cache.items.length).toEqual(1);
@@ -186,28 +186,28 @@ describe("Cache unit tests", function(): void {
 
     it("addItem: item with lower revision exists, item is added.", function(): void {
 
-      let cache: Cache = new Cache();
-      let added: CacheItem = cache.addItem("test", "value", 2);
+        let cache: Cache = new Cache();
+        let added: CacheItem = cache.addItem("test", "value", 2);
 
-      expect(cache.items.length).toEqual(1);
-      expect(cache.items[0].value).toEqual("value");
-      expect(cache.items[0].expires).toBeFalsy();
-      expect(cache.items[0].revision).toEqual(2);
-      expect(added).toBeTruthy();
+        expect(cache.items.length).toEqual(1);
+        expect(cache.items[0].value).toEqual("value");
+        expect(cache.items[0].expires).toBeFalsy();
+        expect(cache.items[0].revision).toEqual(2);
+        expect(added).toBeTruthy();
 
-      let updated: CacheItem = cache.addItem("test", "new-value", 3);
+        let updated: CacheItem = cache.addItem("test", "new-value", 3);
 
-      expect(cache.items.length).toEqual(1);
-      expect(cache.items[0].value).toEqual("new-value");
-      expect(cache.items[0].expires).toBeFalsy();
-      expect(cache.items[0].revision).toEqual(3);
-      expect(updated).toBeTruthy();
+        expect(cache.items.length).toEqual(1);
+        expect(cache.items[0].value).toEqual("new-value");
+        expect(cache.items[0].expires).toBeFalsy();
+        expect(cache.items[0].revision).toEqual(3);
+        expect(updated).toBeTruthy();
     });
 
     it("remove: cache item should be removed successfully.", function(): void {
 
         let cache: Cache = new Cache();
-        cache.items = [{key: "test", value: "old"} as CacheItem];
+        cache.items = [{ key: "test", value: "old" } as CacheItem];
         cache.remove("test");
 
         expect(cache.items.length).toEqual(0);
@@ -216,7 +216,7 @@ describe("Cache unit tests", function(): void {
     it("remove: cache item not existing should remove without error.", function(): void {
 
         let cache: Cache = new Cache();
-        cache.items = [{key: "test", value: "old"} as CacheItem];
+        cache.items = [{ key: "test", value: "old" } as CacheItem];
         cache.remove("foo");
 
         expect(cache.items.length).toEqual(1);
@@ -233,133 +233,130 @@ describe("Cache unit tests", function(): void {
 
     it("isExpired: cache item should not be expired if no expires set", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      expect(item.isExpired()).toBeFalsy();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        expect(item.isExpired()).toBeFalsy();
 
     });
 
     it("isExpired: cache item should not be expired if future expires set", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
-      item.expires.setTime(item.expires.getTime() + 5);
-      expect(item.isExpired()).toBeFalsy();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
+        item.expires.setTime(item.expires.getTime() + 5);
+        expect(item.isExpired()).toBeFalsy();
     });
 
     it("isExpired: cache item should be expired if past expires set", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
-      item.expires.setTime(item.expires.getTime() - 5);
-      expect(item.isExpired()).toBeTruthy();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
+        item.expires.setTime(item.expires.getTime() - 5);
+        expect(item.isExpired()).toBeTruthy();
     });
 
     it("isExpired: cache item should be expired immediate expires set", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
-      expect(item.isExpired()).toBeFalsy();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
+        expect(item.isExpired()).toBeFalsy();
     });
 
     it("exists: existing cache item should return true", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
 
-      let cache: Cache = new Cache();
-      cache.items = [item];
+        let cache: Cache = new Cache();
+        cache.items = [item];
 
-      expect(cache.exists("test")).toBeTruthy();
+        expect(cache.exists("test")).toBeTruthy();
     });
 
     it("exists: non-existing cache item should return false", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
 
-      let cache: Cache = new Cache();
-      cache.items = [item];
+        let cache: Cache = new Cache();
+        cache.items = [item];
 
-      expect(cache.exists("unknown")).toBeFalsy();
+        expect(cache.exists("unknown")).toBeFalsy();
     });
 
     it("exists: empty cache should return false", function(): void {
 
-      let cache: Cache = new Cache();
-      cache.items = [];
+        let cache: Cache = new Cache();
+        cache.items = [];
 
-      expect(cache.exists("unknown")).toBeFalsy();
+        expect(cache.exists("unknown")).toBeFalsy();
     });
 
     it("exists: undefined cache should return false", function(): void {
 
-      let cache: Cache = new Cache();
-      cache.items = undefined;
+        let cache: Cache = new Cache();
+        cache.items = undefined;
 
-      let spy: jasmine.Spy = spyOn(Logger.log, "warn").and.callThrough();
+        let spy: jasmine.Spy = spyOn(Logger.log, "warn").and.callThrough();
 
-      expect(cache.exists("unknown")).toBeFalsy();
-      expect(spy).toHaveBeenCalled();
+        expect(cache.exists("unknown")).toBeFalsy();
+        expect(spy).toHaveBeenCalled();
     });
 
     it("get: existing cache item should be returned", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
 
-      let cache: Cache = new Cache();
-      cache.items = [item];
+        let cache: Cache = new Cache();
+        cache.items = [item];
 
-      let value: any = cache.get("test");
+        let value: any = cache.get("test");
 
-      expect(value).toBeTruthy();
-      expect(value.value).toEqual("value");
+        expect(value).toBeTruthy();
+        expect(value.value).toEqual("value");
     });
 
     it("get: non-existing cache item should return undefined", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
 
-      let cache: Cache = new Cache();
-      cache.items = [item];
+        let cache: Cache = new Cache();
+        cache.items = [item];
 
-      expect(cache.get("unknown")).toBeFalsy();
+        expect(cache.get("unknown")).toBeFalsy();
     });
 
-    it("get: non-existing cache item should return undefined", function(): void {
+    it("get: existing cache item should return a value", function(): void {
 
-      let item: CacheItem = new CacheItem();
-      item.key = "test";
-      item.value = "value";
-      item.expires = new Date();
-      item.expires.setDate(item.expires.getDate() - 1);
+        let item: CacheItem = new CacheItem();
+        item.key = "test";
+        item.value = "value";
+        item.expires = new Date();
+        item.expires.setDate(item.expires.getDate() - 1);
 
-      let spy: jasmine.Spy = spyOn(Logger.log, "info").and.callThrough();
+        let cache: Cache = new Cache();
+        cache.items = [item];
 
-      let cache: Cache = new Cache();
-      cache.items = [item];
+        let value: any = cache.get("test");
 
-      let value: any = cache.get("test");
-
-      expect(value).toBeTruthy();
-      expect(value.value).toEqual("value");
-      expect(spy).toHaveBeenCalled();
+        expect(value).toBeTruthy();
+        expect(value.value).toEqual("value");
     });
 });
