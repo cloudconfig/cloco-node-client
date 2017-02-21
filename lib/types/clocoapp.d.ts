@@ -144,7 +144,7 @@ export declare class ClocoAppCoreDetails {
      * Indicates whether this is the default app in the subscription.
      * @type {boolean}
      */
-    isDefault: boolean;
+    isFavorite: boolean;
 }
 /**
  *   class ConfigObjectHeader

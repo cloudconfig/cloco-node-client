@@ -6,6 +6,10 @@
 
 A cloco client for distribution as an NPM package, for incorporating into NodeJS applications.  
 
+## Documentation
+
+The documentation for cloco is available on GitHub pages [https://cloudconfig.github.io/cloco-docs/](https://cloudconfig.github.io/cloco-docs/).
+
 ## Prerequisites
 
 The following global prerequisites must exist:
@@ -70,7 +74,13 @@ useDiskCaching | Indicates whether disk caching is used. | Optional.  Will defau
 
 ## Credentials
 
-We recommend that you authorize your machine using the cloco-bash tool, but you can set the cloco credentials via the options.  You can generate API credentials via the cloco admin UI or via the API.  Please ensure that the credentials are kept safe.
+We recommend that you set machine credentials using the cloco-cli tool, but you can set the cloco credentials via the options.  You can generate API credentials via the cloco admin UI or via the API.  Please ensure that the credentials are kept safe.
+
+To set credentials via cloco-cli
+
+    $ cloco init --key $CLOCO_CLIENT_KEY --secret $CLOCO_CLIENT_SECRET
+
+Alternatively, you can pass credentials into the cloco-node-client as follows:
 
 ````
 // initialize the credentials if supplied via environment variables.
@@ -153,16 +163,10 @@ Run the unit tests with jasmine:
 
 `npm run test`
 
-# Version Notes
-- `0.1.0` Initial version, supports read-only access to a configuration object.
-- `0.1.1` Minor fixes.
-- `0.1.2` Fixes to allow the code to work with cloco-node-example.
-- `0.1.3` Clean up of build files, removes final console.logs.
-- `0.2.0` Major breaking rebuild.  Aligns with V1.0.0 cloco API.
-- `0.3.0` Non-breaking update, aligns AES encryption with openssl.
-- `0.3.1` Non-breaking update, additional test coverage and small fixes.
-- `0.4.0` Non-breaking update, add local disk caching of configuration.
+# Contributing
+
+We welcome contributions from the community.  Feature requests and bug reports should be raised as issues on GitHub.  If you wish to contribute a fix please fork, make your changes and issue a PR.
 
 # License
-Copyright (c) 2016 345 Systems LLP
+Copyright (c) 2016-2017 345 Systems LLP
 Licensed under the MIT license.

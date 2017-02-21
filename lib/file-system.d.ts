@@ -18,6 +18,10 @@ export declare class FileSystem {
      */
     static writeFile(filename: string, data: string): Promise<void>;
     /**
+     * Ensures that the local config directories exist.
+     */
+    static ensureDirectory(path: string): void;
+    /**
      * Returns the user home path.
      * @return {string} The user home path.
      */
