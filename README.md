@@ -163,6 +163,10 @@ Run the unit tests with jasmine:
 
 `npm run test`
 
+# Contributing
+
+We welcome contributions from the community.  Feature requests and bug reports should be raised as issues on GitHub.  If you wish to contribute a fix please fork, make your changes and issue a PR.
+
 # Version Notes
 - `0.1.0` Initial version, supports read-only access to a configuration object.
 - `0.1.1` Minor fixes.
