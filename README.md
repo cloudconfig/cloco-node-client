@@ -8,7 +8,7 @@ A cloco client for distribution as an NPM package, for incorporating into NodeJS
 
 ## Documentation
 
-The documentation for cloco is available on GitHub pages [https://cloudconfig.github.io/cloco-docs/](https://cloudconfig.github.io/cloco-docs/).
+The documentation for cloco is available at [http://docs.cloco.io](http://docs.cloco.io).
 
 ## Prerequisites
 
@@ -30,11 +30,13 @@ If you want to download test the client locally, you can do this by following th
 
 Reference the client:
 
-`var cloco = require('cloco-node-client');`
+```javascript
+var cloco = require('cloco-node-client');
+```
 
 Instantiate the client:
 
-````
+```javascript
 // set up a bunyan logger if you want to set custom logging.
 var logger = bunyan.createLogger({name: 'cloco-node-client'});
 
@@ -53,7 +55,7 @@ var options = {
 
 // instantiate the client and subscribe to the menu.
 var client = cloco.createClient(options);
-````
+```
 
 # Options
 
@@ -61,15 +63,15 @@ The options object you pass into cloco.
 
 Parameter | Description | Usage
 --------- | ----------- | -----
-application | The ID of the cloco application. | Optional, but if not supplied this will be taken from the machine default (set via [cloco-bash](https://github.com/cloudconfig/cloco-bash)).
+application | The ID of the cloco application. | Optional, but if not supplied this will be taken from the machine default (set via the cloco cli).
 cacheCheckInterval | The time in milliseconds between checking for expired configuration in the cache. | Optional, defaults to 5000ms.
-credentials | The credentials to use to access cloco. | Optional, but if not supplied will use the machine credentials.  See Credentials section below.
+credentials | The credentials to use to access cloco. | Optional, but if not supplied will use the machine credentials (set via the cloco cli).  See Credentials section below.
 encryptor | The encryption algorithm. | Optional, by default this will be a passthrough encryptor (i.e. will not encrypt).  See Encryption section below for more information.
-environment | The deployment environment. | Optional, but if not supplied will use the machine default.
+environment | The deployment environment. | Optional, but if not supplied will use the machine default (set via the cloco cli).
 log | The log provider. | Optional.  Defaults to a new bunyan.Logger with basic settings.  See Logging section for more information.
-subscription | The name of your cloco subscription.  | Optional, but if not supplied will use the machine default.
+subscription | The name of your cloco subscription.  | Optional, but if not supplied will use the machine default (set via the cloco cli).
 ttl | The time in seconds for items to live in the cache before refreshing. | Optional, if not supplied then cache items will never expire.
-url | The cloco API url. | Optional.  Will default to the public hosted cloco API.  Use this to override for on-premise installations of cloco.
+url | The cloco API url. | Optional.  Will default to the public hosted cloco API.  Use this to override for on-premise installations of cloco.  Can also be defaulted using the cloco cli.
 useDiskCaching | Indicates whether disk caching is used. | Optional.  Will default to false.  When set to true any information received from the API will be saved to disk, and will be loaded from disk on app start if the API cannot be contacted.
 
 ## Credentials
@@ -78,16 +80,16 @@ We recommend that you set machine credentials using the cloco-cli tool, but you 
 
 To set credentials via cloco-cli
 
-    $ cloco init --key $CLOCO_CLIENT_KEY --secret $CLOCO_CLIENT_SECRET
+`$ cloco init --key $CLOCO_CLIENT_KEY --secret $CLOCO_CLIENT_SECRET`
 
 Alternatively, you can pass credentials into the cloco-node-client as follows:
 
-````
+```javascript
 // initialize the credentials if supplied via environment variables.
 if (process.env.CLOCO_CLIENT_KEY && process.env.CLOCO_CLIENT_SECRET) {
   options.credentials = { key: process.env.CLOCO_CLIENT_KEY, secret: process.env.CLOCO_CLIENT_SECRET };
 }
-````
+```
 
 ## Encryption
 
@@ -100,11 +102,13 @@ If no encryption provider is supplied then the default will be passthrough, i.e.
 
 To use the AES encryption algorithm, you must supply an encryption key / secret.
 
-`options.encryptor = cloco.createAesEncryptor("my-encryption-key");`
+```javascript
+options.encryptor = cloco.createAesEncryptor("my-encryption-key");
+```
 
 To roll your own encryption algorithm, create an encryptor that conforms to the following interface:
 
-````
+```javascript
 export interface IEncryptor {
 
   /**
@@ -121,7 +125,7 @@ export interface IEncryptor {
   decrypt(encrypted: string): string;
 
 }
-````
+```
 
 ## Logging
 
