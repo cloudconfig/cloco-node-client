@@ -45,4 +45,9 @@ export declare class AesEncryptor implements IEncryptor {
      * @return {EncryptionParameters}        The encryption parameters.
      */
     createKeyAndIV(): EncryptionParameters;
+    /**
+     * Creates the hash, given the salt and passphrase.
+     * @param {EncryptionParameters} params The encryption parameters.
+     */
+    private createHash(params);
 }

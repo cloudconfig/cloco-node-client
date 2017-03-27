@@ -105,36 +105,22 @@ export class AesEncryptor implements IEncryptor {
 
         // default to base64.
         format = format || "base64";
-        let result: EncryptionParameters = new EncryptionParameters();
+        let params: EncryptionParameters = new EncryptionParameters();
 
         // convert the data into bytes.
-        result.data = new Buffer(data, format);
-        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: Data (base64): ${result.data.toString("base64")}`);
+        params.data = new Buffer(data, format);
+        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: Data (base64): ${params.data.toString("base64")}`);
 
         // the salt is bytes 8-15.
-        result.salt = result.data.slice(8, 16);
-        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: Salt (hex): ${result.salt.toString("hex")}`);
+        params.salt = params.data.slice(8, 16);
+        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: Salt (hex): ${params.salt.toString("hex")}`);
 
         // the content is bytes 16 onwards
-        result.content = result.data.slice(16);
+        params.content = params.data.slice(16);
 
-        // the key and the IV are derived through 3 rounds of MD5 hashing, each generating 8 bytes of data.
-        let rounds: number = 3;
-        let data00: Buffer = Buffer.concat([new Buffer(this.passphrase, "utf8"), result.salt]);
-        let md5hash: Buffer[] = [new Buffer(Crypto.createHash("md5").update(data00).digest("base64"), "base64")];
+        this.createHash(params);
 
-        for (let i: number = 1; i < rounds; i++) {
-            let data01: Buffer = Buffer.concat([md5hash[i - 1], data00]);
-            md5hash[i] = new Buffer(Crypto.createHash("md5").update(data01).digest("base64"), "base64");
-        }
-
-        result.key = Buffer.concat([md5hash[0], md5hash[1]]);
-        result.iv = md5hash[2];
-
-        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: Key (hex): ${result.key.toString("hex")}`);
-        Logger.log.debug(`AesIVDecryptor.deriveKeyAndIV: IV (hex): ${result.iv.toString("hex")}`);
-
-        return result;
+        return params;
     }
 
     /**
@@ -145,15 +131,26 @@ export class AesEncryptor implements IEncryptor {
 
         Logger.log.debug("AesIVDecryptor.createKeyAndIV: Start");
 
-        let result: EncryptionParameters = new EncryptionParameters();
+        let params: EncryptionParameters = new EncryptionParameters();
 
         // the salt is bytes 8-15.
-        result.salt = Crypto.randomBytes(8);
-        Logger.log.debug(`AesIVDecryptor.createKeyAndIV: Salt (hex): ${result.salt.toString("hex")}`);
+        params.salt = Crypto.randomBytes(8);
+        Logger.log.debug(`AesIVDecryptor.createKeyAndIV: Salt (hex): ${params.salt.toString("hex")}`);
+
+        this.createHash(params);
+
+        return params;
+    }
+
+    /**
+     * Creates the hash, given the salt and passphrase.
+     * @param {EncryptionParameters} params The encryption parameters.
+     */
+    private createHash(params: EncryptionParameters): void {
 
         // the key and the IV are derived through 3 rounds of MD5 hashing, each generating 8 bytes of data.
         let rounds: number = 3;
-        let data00: Buffer = Buffer.concat([new Buffer(this.passphrase, "utf8"), result.salt]);
+        let data00: Buffer = Buffer.concat([new Buffer(this.passphrase, "utf8"), params.salt]);
         let md5hash: Buffer[] = [new Buffer(Crypto.createHash("md5").update(data00).digest("base64"), "base64")];
 
         for (let i: number = 1; i < rounds; i++) {
@@ -161,12 +158,11 @@ export class AesEncryptor implements IEncryptor {
             md5hash[i] = new Buffer(Crypto.createHash("md5").update(data01).digest("base64"), "base64");
         }
 
-        result.key = Buffer.concat([md5hash[0], md5hash[1]]);
-        result.iv = md5hash[2];
+        params.key = Buffer.concat([md5hash[0], md5hash[1]]);
+        params.iv = md5hash[2];
 
-        Logger.log.debug(`AesIVDecryptor.createKeyAndIV: Key (hex): ${result.key.toString("hex")}`);
-        Logger.log.debug(`AesIVDecryptor.createKeyAndIV: IV (hex): ${result.iv.toString("hex")}`);
+        Logger.log.debug(`AesIVDecryptor.createHash: Key (hex): ${params.key.toString("hex")}`);
+        Logger.log.debug(`AesIVDecryptor.createHash: IV (hex): ${params.iv.toString("hex")}`);
 
-        return result;
     }
 }
