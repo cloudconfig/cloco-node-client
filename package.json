@@ -1,6 +1,6 @@
 {
   "name": "cloco-node-client",
-  "version": "0.5.1",
+  "version": "0.6.2",
   "description": "A cloco client for distribution as an NPM package.",
   "main": "lib/index.js",
   "typings": "lib/index",

@@ -6,9 +6,16 @@ import { AesEncryptor } from "./aes-encryptor";
 import { EncryptionError } from "./encryption-error";
 import { Logger } from "../logging/logger";
 
+/*
+The data in this test has been encrypted using the following command:
+echo "Cloco Unit Test: Encrypted Data" | openssl enc -aes256 -a -A -pass pass:Cloco_Unit_Test_Environment_2017 -p
+U2FsdGVkX199kFYvw1zd
+salt=7D90562FC35CDDF2
+key=72BA0031B4A0F868CA180604F543BB64D484A279A80FF1E614FA7FB1811F2AAF
+iv =54E081E4C4597D909FFD08116FAD2EF2
+8srwLZj1XhR1EKENvSQgsbGo1k5msX6pwCnuCIEc9/wmCwGiHhfrICQk0iFRNRxWgw==
+ */
 describe("AesEncryptor unit tests", function(): void {
-
-
 
     // initialize the connection.
     beforeEach(function(): void {
@@ -18,60 +25,49 @@ describe("AesEncryptor unit tests", function(): void {
     it("object should encrypt successfully.", function(): void {
 
         let input: any = {
-          foo: "bar",
+            foo: "bar",
         };
 
-        let key: string = "an-encryption-string";
-        let encryptor: AesEncryptor = new AesEncryptor(key);
+        let passphrase: string = "encryption-string-32-characters-";
+        let encryptor: AesEncryptor = new AesEncryptor(passphrase);
 
         let encrypted: string = encryptor.encrypt(JSON.stringify(input));
 
-        let expected: string = "Lt3A+JtoGTOeONv7J1VHzQ==";
+        let decrypted: string = encryptor.decrypt(encrypted);
+        let result: any = JSON.parse(decrypted);
 
-        expect(encrypted).toEqual(expected);
+        expect(encrypted.length).toEqual(44);
+        expect(result.foo).toEqual("bar");
     });
 
     it("object should decrypt successfully.", function(): void {
 
-        let encrypted: string = "lzf/qL5Vqdt5SJNMhsevsQ==";
+        let encrypted: string = "U2FsdGVkX199kFYvw1zd8srwLZj1XhR1EKENvSQgsbGo1k5msX6pwCnuCIEc9/wmCwGiHhfrICQk0iFRNRxWgw==";
 
-        let key: string = "an-encryption-string";
-        let encryptor: AesEncryptor = new AesEncryptor(key);
+        let passphrase: string = "Cloco_Unit_Test_Environment_2017";
+        let encryptor: AesEncryptor = new AesEncryptor(passphrase);
 
-        let decrypted: any = encryptor.decrypt(encrypted);
-        decrypted = JSON.parse(decrypted);
+        let decrypted: string = encryptor.decrypt(encrypted);
 
-        expect(decrypted.foo).toEqual("bar");
+        expect(decrypted).toEqual("Cloco Unit Test: Encrypted Data\n"); // note line ending added
     });
 
     it("object encrypted with different key should fail.", function(): void {
 
-        let key: string = "an-encryption-string";
-        let key2: string = "an-alternative-encryption-string";
-        let encryptor: AesEncryptor = new AesEncryptor(key2);
+        let badPassphrase: string = "an-alternative-encryption-string";
+        let encryptor: AesEncryptor = new AesEncryptor(badPassphrase);
 
-        let encrypted: string = "lzf/qL5Vqdt5SJNMhsevsQ==";
+        let encrypted: string = "U2FsdGVkX199kFYvw1zd8srwLZj1XhR1EKENvSQgsbGo1k5msX6pwCnuCIEc9/wmCwGiHhfrICQk0iFRNRxWgw==";
 
         try {
             let decrypted: any = encryptor.decrypt(encrypted);
-            decrypted = JSON.parse(decrypted);
             fail("Expect JSON.parse to fail.");
         } catch (e) {
-          expect(e instanceof EncryptionError).toBeTruthy();
+            expect(e instanceof EncryptionError).toBeTruthy();
         }
     });
 
-    it("should decrypt json data encrypted from command line openssl", function(): void {
-      // tslint:disable-next-line:max-line-length
-      let encrypted: string = "829ysS1Qukke6bmLN/P8I//fREfixZW0P4bfjaj6tN3EbQ7HqsT6+O3P5DbFa5FW+86HvGBcqHa4pmzsLRBZVf1vHezDwzZ5f/XpsdMv4loTrkSe6HxGNgjxcyLN+s4CCRpl+cKmCNr98HTv6E/KN/Vi8PlBYzLUHe+8UHO5IRCQjf3qcneOq1O8uMCauRh07UvUgflg113LK8wEYSi0cVMTI2QmlZpidLFFUftlDo/RbB//btt7hpWMhm3pZ8BIcmF4OCPFYUir6vQ9a8eGUC+0Uu7w02LRzM/qfmuedzCuc7DrZua4k9zI1F5Lv3ULBcwFMkbrmsZKl3dXGZ3TtiQq74ukwUGRWmPOi/2q0JbXJoX0F0MOe7mmcgryv372QmXQx/v5YwU9QNzsm9nVu2uILMMuFDjCGeYjOGww1AfAEMZIoTiilZSXQYyRNAAb0EbfvcVz7Vspel3IDl1CmnEWjXCzKkgIXNVx4bG7BXEiXCj3WU/nOiAlpmnYWhz/ZO3zHkr2Pph6RGNRtfyzfZL2CDele7cd4k3YBIWFjvHqDSmSmucRLKPXN3rcYh8neUePEp4EU1h5/zmiAxUzDuN2x6Kp8FZad50Pjzo+U7surtimB86U5giLhT+BNWfghTeG94rENONnAso7BBPE8bKdrySf1Gbmllm+Ff7lfVuWoBsVnxMzPcxu1ODpvYZiZ7eipZ7TRhFkaJKNDFcEzusXj6HGEAFBnxbm2yl/p0VPzL5FgtuAHjtrO8jG4KsfmEW3mrf4qifzR11U03BbzmPhIOHhvjD1unHKZo6NxUpT2q5g1GVSpAjDmDepWUgOR6Vuo0vXRLCA9h6GDjb9Cz/8LJOOs6m2AA4dddcgorEwkHAtvILfW9kmqxeq19Q2Puph/tlwu2n8F8lq67uDeiU+KQXw9uOQ1yKR+pxBViwoMXpl4bMqy0GbSrObXKcHNvofGcAuL4bbuCvv09X4ncVc6MDpZFYeRHYVnMfiIiIRduzfncceeoUfxWHF+FPwsexIyfAYm/OrqvgwrQJwYvykjnBQRKjLPwVUcv4a78ElqKSrTJWmsV0/pBAdBTrfTa585mNKeK2H3kEh0O0k3cYOB3xbCXQJkr60g+pYvjg5h69srjpS9OGDMNrcx+zumqB+3f4vJ506AZKOaZ+Wtm4eb3WBmd1he3f+pWt4d5+sdRV4FPFrf9nnpT9SleBAYy1xunBbmJAIJD1F2J01lgCfbOokB8VpO7vpcXjaDu25mf+peHWu6CNTKJIo9by0N6NJFPJMFoc92wNj3pNlQA==";
-      let key: string = "cloco-test-123";
-      let encryptor: AesEncryptor = new AesEncryptor(key);
-
-      let decrypted: any = encryptor.decrypt(encrypted);
-      decrypted = JSON.parse(decrypted);
-    });
-
-    it("decrypt with no key should fail", function(): void {
+    it("decrypt with no passphrase should fail", function(): void {
 
         let encryptor: AesEncryptor = new AesEncryptor("");
         let encrypted: string = "lzf/qL5Vqdt5SJNMhsevsQ==";
@@ -80,14 +76,14 @@ describe("AesEncryptor unit tests", function(): void {
             let decrypted: any = encryptor.decrypt(encrypted);
             fail("Expect exception to be raised due to no key.");
         } catch (e) {
-          expect(e instanceof EncryptionError).toBeTruthy();
+            expect(e instanceof EncryptionError).toBeTruthy();
         }
     });
 
     it("encrypt with no key should fail", function(): void {
 
         let input: any = {
-          foo: "bar",
+            foo: "bar",
         };
 
         let encryptor: AesEncryptor = new AesEncryptor("");
@@ -96,7 +92,7 @@ describe("AesEncryptor unit tests", function(): void {
             let encrypted: any = encryptor.encrypt(JSON.stringify(input));
             fail("Expect exception to be raised due to no key.");
         } catch (e) {
-          expect(e instanceof EncryptionError).toBeTruthy();
+            expect(e instanceof EncryptionError).toBeTruthy();
         }
     });
 });
