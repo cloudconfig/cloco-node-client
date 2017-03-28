@@ -69,7 +69,7 @@ export class Cache {
 
         if (!existing || existing.revision < revision) {
 
-            Logger.log.info(`Cache.addItem: new revision '${revision}' detected, adding to cache.`);
+            Logger.log.info(`Cache.addItem: new revision '${revision}' of '${key}' detected, adding to cache.`);
 
             let cacheItem: CacheItem = new CacheItem();
             cacheItem.key = key;
