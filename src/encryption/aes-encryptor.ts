@@ -48,7 +48,7 @@ export class AesEncryptor implements IEncryptor {
         Logger.log.debug("AesEncryptor.encrypt: start.");
 
         if (!this.passphrase) {
-            throw new EncryptionError("Encryptionpassphrase not available.", "AES256");
+            throw new EncryptionError("Encryption passphrase not available.", "AES256");
         }
 
         let params: EncryptionParameters = this.createKeyAndIV();
@@ -72,7 +72,7 @@ export class AesEncryptor implements IEncryptor {
         Logger.log.debug("AesEncryptor.decrypt: start.");
 
         if (!this.passphrase) {
-            throw new EncryptionError("Encryptionpassphrase not available.", "AES256");
+            throw new EncryptionError("Encryption passphrase not available.", "AES256");
         }
 
         try {
@@ -84,7 +84,7 @@ export class AesEncryptor implements IEncryptor {
             let decrypted: string = decipher.update(params.content, "base64", "utf8");
             decrypted += decipher.final("utf8");
 
-            Logger.log.debug(`AesEncryptor.decrypt: decrypted data: ${decrypted}`);
+            Logger.log.debug(`AesEncryptor.decrypt: data decrypted successfully.`);
 
             return decrypted;
         } catch (e) {
